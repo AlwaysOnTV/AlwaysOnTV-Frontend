@@ -208,6 +208,7 @@
 				<v-btn
 					color="green-darken-1"
 					variant="text"
+					:loading="isLoading"
 					@click="createPlaylist"
 				>
 					Add
@@ -362,6 +363,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="!canImportPlaylist"
+					:loading="isLoading"
 					@click="importPlaylist"
 				>
 					Add
@@ -398,6 +400,7 @@
 				<v-btn
 					color="green-darken-1"
 					variant="text"
+					:loading="isLoading"
 					@click="queuePlaylist"
 				>
 					Queue
@@ -427,7 +430,7 @@
 
 <script setup>
 import _ from 'lodash';
-import ky from '@/ky';
+import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 

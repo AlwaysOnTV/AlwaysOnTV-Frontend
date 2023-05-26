@@ -131,6 +131,7 @@
 										variant="tonal"
 										class="mr-5"
 										color="red"
+										:loading="isLoading"
 										@click="removeVideoFromPlaylist(item.index)"
 									>
 										<v-tooltip
@@ -173,6 +174,7 @@
 				<v-btn
 					color="green-darken-1"
 					variant="text"
+					:loading="isLoading"
 					@click="deletePlaylist"
 				>
 					Delete
@@ -259,6 +261,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="!selectedVideo"
+					:loading="isLoading"
 					@click="addNewVideoToPlaylist"
 				>
 					Add
@@ -301,6 +304,7 @@
 				<v-btn
 					color="green-darken-1"
 					text
+					:loading="isLoading"
 					@click="editPos"
 				>
 					Save
@@ -329,7 +333,7 @@
 </template>
 
 <script setup>
-import ky from '@/ky';
+import ky, { isLoading } from '@/ky';
 
 import { onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';

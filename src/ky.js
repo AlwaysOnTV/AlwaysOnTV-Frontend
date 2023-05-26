@@ -1,6 +1,9 @@
 import { useCookies } from 'vue3-cookies';
+import { ref } from 'vue';
 
 import ky from 'ky';
+
+export let isLoading = ref(false);
 
 export const API_URL = import.meta.env.VITE_API_URL || '/';
 
@@ -16,7 +19,11 @@ const api = ky.create({
 	prefixUrl: `${API_URL}api`,
 	hooks: {
 		beforeRequest: [
+			() => isLoading.value = true,
 			addAuthorization,
+		],
+		afterResponse: [
+			() => isLoading.value = false,
 		],
 	},
 });

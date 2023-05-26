@@ -97,6 +97,7 @@
 													size="large"
 													color="orange-darken-4"
 													variant="flat"
+													:loading="isLoading"
 													@click="queueVideo(item.id)"
 												>
 													<v-tooltip
@@ -328,6 +329,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="disableAddVideo"
+					:loading="isLoading"
 					@click="addNewVideo"
 				>
 					Add
@@ -423,6 +425,7 @@
 					color="green-darken-1"
 					text
 					:disabled="!canSave"
+					:loading="isLoading"
 					@click="editVideo(editingVideo.id)"
 				>
 					Save
@@ -455,6 +458,7 @@
 				<v-btn
 					color="green-darken-1"
 					variant="text"
+					:loading="isLoading"
 					@click="deleteVideo(deletingVideo.id)"
 				>
 					Delete
@@ -542,6 +546,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="!selectedPlaylist"
+					:loading="isLoading"
 					@click="addVideoToPlaylist"
 				>
 					Add
@@ -576,7 +581,7 @@
 </template>
 
 <script setup>
-import ky from '@/ky';
+import ky, { isLoading } from '@/ky';
 import _ from 'lodash';
 import { onMounted, ref, watch, computed } from 'vue';
 import { useDisplay } from 'vuetify';

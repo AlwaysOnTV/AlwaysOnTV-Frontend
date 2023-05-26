@@ -35,7 +35,7 @@
 
 					<v-btn
 						:disabled="!password"
-						:loading="loading"
+						:loading="isLoading"
 						@click="updatePasswordAndAuth"
 					>
 						Authorize
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { auth } from '@/ky';
+import { auth, isLoading } from '@/ky';
 import { useCookies } from 'vue3-cookies';
 import { onMounted, ref, watch } from 'vue';
 
@@ -57,7 +57,6 @@ const { cookies } = useCookies();
 
 const passwordField = ref(null);
 const password = ref('');
-const loading = ref(false);
 
 const validPassword = ref(true);
 
@@ -72,7 +71,7 @@ const updatePasswordAndAuth = () => {
 };
 
 const tryAuth = async () => {
-	try {
+	try {		
 		const result = await auth.post('').json();
 
 		if (result.status === 200) {
@@ -90,9 +89,10 @@ const tryAuth = async () => {
 	}
 };
 
-onMounted(() => {
+onMounted(async () => {
 	password.value = cookies.get('password');
+	if (!password.value) return;
 
-	tryAuth();
+	await tryAuth();
 });
 </script>
