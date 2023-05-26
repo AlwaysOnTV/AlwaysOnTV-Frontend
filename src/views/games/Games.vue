@@ -210,6 +210,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="!canAddGame"
+					:loading="isLoading"
 					@click="addNewGame"
 				>
 					Add
@@ -242,6 +243,7 @@
 				<v-btn
 					color="green-darken-1"
 					variant="text"
+					:loading="isLoading"
 					@click="deleteGame(deletingGame)"
 				>
 					Delete
@@ -269,7 +271,7 @@
 </template>
 
 <script setup>
-import ky from '@/ky';
+import ky, { isLoading } from '@/ky';
 import _ from 'lodash';
 import { onMounted, ref, watch, computed } from 'vue';
 import { useDisplay } from 'vuetify';

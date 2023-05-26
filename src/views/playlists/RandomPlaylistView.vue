@@ -84,6 +84,7 @@
 										variant="tonal"
 										class="mr-5"
 										color="red"
+										:loading="isLoading"
 										@click="removeVideoFromPlaylist(item.id)"
 									>
 										<v-tooltip
@@ -182,6 +183,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="disableAddVideoToPlaylist"
+					:loading="isLoading"
 					@click="addNewVideoToPlaylist"
 				>
 					Add
@@ -216,7 +218,7 @@
 </template>
 
 <script setup>
-import ky from '@/ky';
+import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed } from 'vue';
 
 import SelectVideoDialog from '@/composables/SelectVideoDialog.vue';

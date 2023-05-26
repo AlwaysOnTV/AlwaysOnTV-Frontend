@@ -71,6 +71,7 @@
 				color="red"
 				variant="tonal"
 				class="mr-1"
+				:loading="isLoading"
 				@click="deleteFromQueue(index)"
 			>
 				<v-tooltip
@@ -88,6 +89,7 @@
 				size="x-small"
 				variant="tonal"
 				class="mr-1"
+				:loading="isLoading"
 				@click="editPosStart(index)"
 			>
 				<v-tooltip
@@ -105,6 +107,7 @@
 				size="x-small"
 				variant="tonal"
 				class="mr-1"
+				:loading="isLoading"
 				@click="editPosEnd(index)"
 			>
 				<v-tooltip
@@ -123,7 +126,7 @@
 <script setup>
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
 
-const props = defineProps(['item', 'index']);
+const props = defineProps(['item', 'index', 'isLoading']);
 
 const emit = defineEmits(['openEditPos', 'deleteFromQueue', 'editPosStart', 'editPosEnd']);
 

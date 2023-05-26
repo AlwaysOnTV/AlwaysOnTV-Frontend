@@ -96,6 +96,7 @@
 					variant="outlined"
 					prepend-icon="mdi-content-save"
 					:disabled="!canSave"
+					:loading="isLoading"
 					@click="saveSettings"
 				>
 					Save
@@ -124,7 +125,7 @@
 </template>
 
 <script setup>
-import ky from '@/ky';
+import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed } from 'vue';
 
 const settingsData = ref({});

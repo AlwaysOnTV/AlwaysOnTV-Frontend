@@ -71,6 +71,8 @@
 									:item="item"
 									:index="index"
 
+									:loading="isLoading"
+
 									@open-edit-pos="openEditQueuePositionDialog"
 									@delete-from-queue="deleteVideoFromQueue"
 									@edit-pos-start="editQueuePositionStart"
@@ -208,6 +210,7 @@
 				<v-btn
 					color="green-darken-1"
 					text
+					:loading="isLoading"
 					@click="editQueuePosition"
 				>
 					Save
@@ -294,6 +297,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="!selectedPlaylist"
+					:loading="isLoading"
 					@click="addNewPlaylistToQueue"
 				>
 					Add
@@ -380,6 +384,7 @@
 					color="green-darken-1"
 					variant="text"
 					:disabled="!selectedVideo"
+					:loading="isLoading"
 					@click="addNewVideoToQueue"
 				>
 					Add
@@ -422,6 +427,7 @@
 				<v-btn
 					color="green-darken-1"
 					variant="text"
+					:loading="isLoading"
 					@click="clearQueue"
 				>
 					Clear Queue
@@ -450,7 +456,7 @@
 </template>
 
 <script setup>
-import ky from '@/ky';
+import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed } from 'vue';
 
 import SelectVideoDialog from '@/composables/SelectVideoDialog.vue';
