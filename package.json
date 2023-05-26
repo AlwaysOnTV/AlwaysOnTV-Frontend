@@ -1,0 +1,32 @@
+{
+  "name": "alwaysontv-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "@mdi/font": "7.0.96",
+    "core-js": "^3.30.2",
+    "ky": "^0.33.3",
+    "lodash": "^4.17.21",
+    "roboto-fontface": "^0.10.0",
+    "tiny-emitter": "^2.1.0",
+    "volar-service-eslint": "^0.0.3",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.1",
+    "vue3-cookies": "^1.0.6",
+    "vuetify": "^3.3.1",
+    "webfontloader": "^1.6.28"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "eslint": "^8.41.0",
+    "eslint-plugin-vue": "^9.14.1",
+    "sass": "^1.62.1",
+    "vite": "^4.3.9",
+    "vite-plugin-vuetify": "^1.0.2"
+  }
+}
