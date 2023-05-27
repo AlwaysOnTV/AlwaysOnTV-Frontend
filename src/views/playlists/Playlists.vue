@@ -474,44 +474,46 @@ const loadingYTvideos = ref(false);
 const selectedYTplaylist = ref(false);
 const addVideosToRandomPlaylist = ref(true);
 
-let searchYTplaylistDebouncer = false;
-
 watch(search, (newValue) => {
 	if (newValue === '') return;
 
-	clearTimeout(searchYTplaylistDebouncer);
-
-	searchYTplaylistDebouncer = setTimeout(() => {
-		searchForYTplaylists();
-	}, 500);
+	searchForYTplaylists();
 });
 
-const searchForYTplaylists = async () => {
+const searchForYTplaylists = _.debounce(async () => {
 	if (!search.value) {
 		selectedYTplaylist.value = false;
 	} else {
 		const searchTerm = search.value;
-
+		
 		loadingYTvideos.value = true;
-
-		const data = await ky
-			.post('youtube/get-playlist', {
-				json: {
-					playlistId: searchTerm,
-				},
-			})
-			.json();
-
-		loadingYTvideos.value = false;
-
-		if (!data) {
-			console.error('No playlist found with that name');
-			return;
+		
+		try {
+			const data = await ky
+				.post('youtube/get-playlist', {
+					json: {
+						playlistId: searchTerm,
+					},
+				})
+				.json();
+	
+			if (!data) {
+				console.error('No playlist found with that name');
+				return;
+			}
+	
+			selectedYTplaylist.value = data;
+		}
+		catch (error) {
+			const { message } = await error.response.json();
+		
+			snackbar.value = true;
+			snackbarText.value = message;
 		}
 
-		selectedYTplaylist.value = data;
+		loadingYTvideos.value = false;
 	}
-};
+}, 500);
 
 const canImportPlaylist = computed(() => {
 	return selectedYTplaylist.value && selectedGame.value;
@@ -543,24 +545,26 @@ const openPlaylistDialog = () => {
 };
 
 const queuePlaylist = async () => {
-	const response = await ky
-		.put('queue/playlist', {
-			json: {
-				playlistId: queuePlaylistSelected.value.id,
-			},
-		})
-		.json();
-
-	if (response.status !== 200) {
+	try {
+		await ky
+			.put('queue/playlist', {
+				json: {
+					playlistId: queuePlaylistSelected.value.id,
+				},
+			})
+			.json();
+			
 		snackbar.value = true;
-		snackbarText.value = response.message;
-		return;
+		snackbarText.value = 'Successfully queued playlist.';
+	}
+	catch (error) {
+		const { message } = await error.response.json();
+			
+		snackbar.value = true;
+		snackbarText.value = message;
 	}
 
 	queuePlaylistDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully queued playlist.';
 };
 
 const { name } = useDisplay();
@@ -624,52 +628,56 @@ onMounted(async () => {
 });
 
 const createPlaylist = async () => {
-	const response = await ky
-		.put('playlists', {
-			json: {
-				title: newPlaylistName.value,
-			},
-		})
-		.json();
+	try {
+		await ky
+			.put('playlists', {
+				json: {
+					title: newPlaylistName.value,
+				},
+			})
+			.json();
+	
+		await fetchPlaylists();
 
-	if (response.status !== 200) {
+		createPlaylistDialog.value = false;
+		newPlaylistName.value = '';
+		
 		snackbar.value = true;
-		snackbarText.value = response.message;
-		return;
+		snackbarText.value = 'Successfully added playlist.';
 	}
-
-	await fetchPlaylists();
-
-	createPlaylistDialog.value = false;
-	newPlaylistName.value = '';
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const importPlaylist = async () => {
-	const response = await ky
-		.put('playlists', {
-			json: {
-				gameId: selectedGame.value.id,
-				youTubePlaylistID: selectedYTplaylist.value.id,
-				addNewToRandomPlaylist: addVideosToRandomPlaylist.value,
-			},
-		})
-		.json();
+	try {
+		await ky
+			.put('playlists', {
+				json: {
+					gameId: selectedGame.value.id,
+					youTubePlaylistID: selectedYTplaylist.value.id,
+					addNewToRandomPlaylist: addVideosToRandomPlaylist.value,
+				},
+			})
+			.json();
 
-	if (response.status !== 200) {
+		await fetchPlaylists();
+
+		importPlaylistDialog.value = false;
+		newPlaylistName.value = '';
+
 		snackbar.value = true;
-		snackbarText.value = response.message;
-		return;
+		snackbarText.value = 'Successfully imported playlist.';
 	}
-
-	await fetchPlaylists();
-
-	importPlaylistDialog.value = false;
-	newPlaylistName.value = '';
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully imported playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 </script>

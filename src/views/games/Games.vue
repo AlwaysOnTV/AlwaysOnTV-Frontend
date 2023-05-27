@@ -281,7 +281,6 @@ import placeholderImage from '@/assets/placeholder-500x700.jpg';
 const createGameDialog = ref(false);
 const games = ref([]);
 const selectedGame = ref({});
-const search = ref('');
 
 const deleteDialog = ref(false);
 const deletingGame = ref(false);
@@ -295,8 +294,6 @@ watch(deletingGame, (newValue) => {
 
 const snackbar = ref(false);
 const snackbarText = ref('');
-
-const loadingGames = ref(true);
 
 const { name } = useDisplay();
 const chunkedGames = computed(() => {
@@ -351,50 +348,6 @@ const openCreateGameDialog = () => {
 	createGameDialog.value = true;
 };
 
-let searchDebouncer = false;
-
-watch(search, (newValue) => {
-	if (newValue === '') return;
-
-	clearTimeout(searchDebouncer);
-
-	searchDebouncer = setTimeout(() => {
-		searchForGame();
-	}, 1000);
-});
-
-const searchForGame = async () => {
-	if (!search.value) {
-		selectedGame.value = {};
-	} else {
-		const searchTerm = search.value.toLocaleLowerCase();
-
-		loadingGames.value = true;
-
-		const games = await ky
-			.post('twitch/get-game', {
-				json: {
-					name: searchTerm,
-				},
-			})
-			.json();
-
-		loadingGames.value = false;
-
-		if (!games.length) {
-			console.error('No games found with that name');
-			return;
-		}
-
-		selectedGame.value = games[0];
-
-		selectedGame.value.box_art_url = selectedGame.value.box_art_url.replace(
-			'{width}x{height}',
-			'500x700',
-		);
-	}
-};
-
 const canAddGame = computed(() => {
 	if (!selectedGame.value) return false;
 
@@ -418,34 +371,35 @@ const addNewGame = async () => {
 	);
 
 	if (isDuplicate) {
-		alert('This game is already in the list!');
+		console.error('Game already exists.');
 		return;
 	}
 
-	const addedGame = await ky
-		.put('games', {
-			json: {
-				gameId: gameData.twitch_id,
-				title: gameData.name,
-				thumbnail_url: gameData.thumbnail_url,
-			},
-		})
-		.json();
-
-	if (addedGame.status !== 200) {
+	try {
+		await ky
+			.put('games', {
+				json: {
+					gameId: gameData.twitch_id,
+					title: gameData.name,
+					thumbnail_url: gameData.thumbnail_url,
+				},
+			})
+			.json();
+	
+		await fetchGames();
+	
+		createGameDialog.value = false;
+		selectedGame.value = {};
+	
 		snackbar.value = true;
-		snackbarText.value = addedGame.message;
-		return;
+		snackbarText.value = 'Successfully added game.';
 	}
-
-	await fetchGames();
-
-	createGameDialog.value = false;
-	selectedGame.value = {};
-	search.value = '';
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added game.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const openDeleteDialog = item => {
@@ -453,31 +407,25 @@ const openDeleteDialog = item => {
 };
 
 const deleteGame = async (game) => {
-	const result = await ky.post(`games/id/${game.id}/delete`, {
-		json: {
-			force: game.videoCount > 0,
-		},
-	}).json();
-
-	if (result.status !== 200) {
+	try {
+		await ky.post(`games/id/${game.id}/delete`, {
+			json: {
+				force: game.videoCount > 0,
+			},
+		}).json();
+	
+		await fetchGames();
+	
 		snackbar.value = true;
-		
-		// Still has videos
-		if (result.errorCode === 19) {
-			snackbarText.value = 'One or more videos still use this game. Please delete the videos first.';
-		}
-		else {
-			snackbarText.value = result.message;
-		}
-
-		return;
+		snackbarText.value = 'Successfully deleted game.';
+	
+		deleteDialog.value = false;
 	}
-
-	await fetchGames();
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully deleted game.';
-
-	deleteDialog.value = false;
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 </script>

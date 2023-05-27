@@ -525,92 +525,100 @@ const openEditQueuePositionDialog = index => {
 };
 
 const editQueuePosition = async () => {
-	const result = await ky
-		.post('queue', {
-			json: {
-				index: editQueuePositionIndex.value,
-				newIndex: editQueuePositionInput.value - 1,
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.post('queue', {
+				json: {
+					index: editQueuePositionIndex.value,
+					newIndex: editQueuePositionInput.value - 1,
+				},
+			})
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
+		editQueuePositionDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully edited queue.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	editQueuePositionDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully edited queue.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const editQueuePositionStart = async (index) => {
-	const result = await ky
-		.post('queue', {
-			json: {
-				index: index,
-				newIndex: 'start',
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.post('queue', {
+				json: {
+					index: index,
+					newIndex: 'start',
+				},
+			})
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
+		editQueuePositionDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully moved the video to the beginning.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	editQueuePositionDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully moved the video to the beginning.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const editQueuePositionEnd = async (index) => {
-	const result = await ky
-		.post('queue', {
-			json: {
-				index: index,
-				newIndex: 'end',
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.post('queue', {
+				json: {
+					index: index,
+					newIndex: 'end',
+				},
+			})
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
+		editQueuePositionDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully moved the video to the end.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	editQueuePositionDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully moved the video to the end.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const deleteVideoFromQueue = async (index) => {
-	const result = await ky
-		.delete(`queue/${index}`)
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.delete(`queue/${index}`)
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully deleted video from queue.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	snackbar.value = true;
-	snackbarText.value = result.message;
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 // ---
@@ -653,64 +661,72 @@ const addNewVideoToQueue = async () => {
 		title: selectedVideo.value.title,
 	};
 
-	const addedvideoq = await ky
-		.put('queue/video', {
-			json: {
-				videoId: videoData.id,
-			},
-		})
-		.json();
-
-	if (addedvideoq.status !== 200) {
+	try {
+		await ky
+			.put('queue/video', {
+				json: {
+					videoId: videoData.id,
+				},
+			})
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
+		addVideoDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = addedvideoq.message;
-		return;
+		snackbarText.value = 'Successfully added video.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	addVideoDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added video.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const clearQueue = async () => {
-	const result = await ky.delete('queue').json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.delete('queue')
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
+		deleteDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully cleared queue.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	deleteDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully cleared queue.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const addToQueueFromHistory = async (videoId) => {
-	const result = await ky
-		.put('queue/video', {
-			json: {
-				videoId,
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.put('queue/video', {
+				json: {
+					videoId,
+				},
+			})
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully added video.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added video.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const addNewPlaylistToQueue = async () => {
@@ -719,25 +735,27 @@ const addNewPlaylistToQueue = async () => {
 		title: selectedPlaylist.value.title,
 	};
 
-	const addedplaylistq = await ky
-		.put('queue/playlist', {
-			json: {
-				playlistId: playlistData.id,
-			},
-		})
-		.json();
-
-	if (addedplaylistq.status !== 200) {
+	try {
+		await ky
+			.put('queue/playlist', {
+				json: {
+					playlistId: playlistData.id,
+				},
+			})
+			.json();
+	
+		queueData.value = await ky.get('queue').json();
+	
+		addPlaylistDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = addedplaylistq.message;
-		return;
+		snackbarText.value = 'Successfully added playlist to queue.';
 	}
-
-	queueData.value = await ky.get('queue').json();
-
-	addPlaylistDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 </script>

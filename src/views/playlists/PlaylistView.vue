@@ -395,26 +395,28 @@ const addNewVideoToPlaylist = async () => {
 		title: selectedVideo.value.title,
 	};
 
-	const addedvideoq = await ky
-		.put(`playlists/id/${id}/video`, {
-			json: {
-				videoId: videoData.id,
-			},
-		})
-		.json();
-
-	if (addedvideoq.status !== 200) {
+	try {
+		await ky
+			.put(`playlists/id/${id}/video`, {
+				json: {
+					videoId: videoData.id,
+				},
+			})
+			.json();
+	
+		playlistData.value = await ky.get(`playlists/id/${id}`).json();
+	
+		addVideoDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = addedvideoq.message;
-		return;
+		snackbarText.value = 'Successfully added video to playlist.';
 	}
-
-	playlistData.value = await ky.get(`playlists/id/${id}`).json();
-
-	addVideoDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added video to playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 onMounted(async () => {
@@ -422,65 +424,71 @@ onMounted(async () => {
 });
 
 const deletePlaylist = async () => {
-	const result = await ky.post(`playlists/id/${id}/delete`, {
-		json: {
-			force: playlistData.value.videos.length > 0,
-		},
-	}).json();
-
-	if (result.status !== 200) {
-		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+	try {
+		await ky.post(`playlists/id/${id}/delete`, {
+			json: {
+				force: playlistData.value.videos.length > 0,
+			},
+		}).json();
+	
+		router.push({
+			name: 'playlists',
+		});
 	}
-
-	router.push({
-		name: 'playlists',
-	});
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const removeVideoFromPlaylist = async (index) => {
-	const result = await ky
-		.post(`playlists/id/${id}/video/delete`, {
-			json: {
-				index: index,
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.post(`playlists/id/${id}/video/delete`, {
+				json: {
+					index: index,
+				},
+			})
+			.json();
+	
+		playlistData.value = await ky.get(`playlists/id/${id}`).json();
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully deleted video from playlist.';
 	}
-
-	playlistData.value = await ky.get(`playlists/id/${id}`).json();
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully deleted video from playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const editPos = async () => {
-	const result = await ky
-		.post(`playlists/id/${id}/video`, {
-			json: {
-				index: editPositionIndex.value,
-				newIndex: editPositionInput.value,
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.post(`playlists/id/${id}/video`, {
+				json: {
+					index: editPositionIndex.value,
+					newIndex: editPositionInput.value,
+				},
+			})
+			.json();
+	
+		playlistData.value = await ky.get(`playlists/id/${id}`).json();
+	
+		editPositionDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully edited playlist';
 	}
-
-	playlistData.value = await ky.get(`playlists/id/${id}`).json();
-
-	editPositionDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully edited playlist';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 </script>
