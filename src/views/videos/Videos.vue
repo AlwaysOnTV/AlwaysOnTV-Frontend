@@ -644,24 +644,26 @@ const selectPlaylist = playlist => {
 };
 
 const addVideoToPlaylist = async () => {
-	const response = await ky
-		.put(`playlists/id/${selectedPlaylist.value.id}/video`, {
-			json: {
-				videoId: selectedVideoForPlaylist.value.id,
-			},
-		})
-		.json();
-
-	if (response.status !== 200) {
+	try {
+		await ky
+			.put(`playlists/id/${selectedPlaylist.value.id}/video`, {
+				json: {
+					videoId: selectedVideoForPlaylist.value.id,
+				},
+			})
+			.json();
+	
+		addToPlaylistDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = response.message;
-		return;
+		snackbarText.value = 'Successfully added video to playlist.';
 	}
-
-	addToPlaylistDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added video to playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 // ---
@@ -694,22 +696,24 @@ const openCreateVideoDialog = () => {
 };
 
 const queueVideo = async (videoId) => {
-	const response = await ky
-		.put('queue/video', {
-			json: {
-				videoId,
-			},
-		})
-		.json();
-
-	if (response.status !== 200) {
+	try {
+		await ky
+			.put('queue/video', {
+				json: {
+					videoId,
+				},
+			})
+			.json();
+	
 		snackbar.value = true;
-		snackbarText.value = response.message;
-		return;
+		snackbarText.value = 'Successfully queued video.';
 	}
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully queued video.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const canSave = computed(() => {
@@ -797,22 +801,30 @@ const searchForVideos = async () => {
 
 		loadingVideos.value = true;
 
-		const data = await ky
-			.post('youtube/get-video', {
-				json: {
-					videoId: searchTerm,
-				},
-			})
-			.json();
-
-		loadingVideos.value = false;
-
-		if (!data) {
-			console.error('No videos found with that name');
-			return;
+		try {
+			const data = await ky
+				.post('youtube/get-video', {
+					json: {
+						videoId: searchTerm,
+					},
+				})
+				.json();
+				
+			if (!data) {
+				console.error('No videos found with that name');
+				return;
+			}
+				
+			selectedVideo.value = data;
+		}
+		catch (error) {
+			const { message } = await error.response.json();
+		
+			snackbar.value = true;
+			snackbarText.value = message;
 		}
 
-		selectedVideo.value = data;
+		loadingVideos.value = false;
 	}
 };
 
@@ -839,59 +851,63 @@ const addNewVideo = async () => {
 	);
 
 	if (isDuplicate) {
-		alert('This video is already in the list!');
+		console.error('Video already exists.');
 		return;
 	}
 
-	const addedVideo = await ky
-		.put('videos', {
-			json: {
-				videoId: videoData.id,
-				gameId: videoData.gameId,
-				addToRandomPlaylist: addVideoToRandomPlaylist.value,
-			},
-		})
-		.json();
-
-	if (addedVideo.status !== 200) {
+	try {
+		await ky
+			.put('videos', {
+				json: {
+					videoId: videoData.id,
+					gameId: videoData.gameId,
+					addToRandomPlaylist: addVideoToRandomPlaylist.value,
+				},
+			})
+			.json();
+	
+		videos.value = await ky.get('videos').json();
+	
+		createVideoDialog.value = false;
+		selectedVideo.value = false;
+		search.value = '';
+	
 		snackbar.value = true;
-		snackbarText.value = addedVideo.message;
-		return;
+		snackbarText.value = 'Successfully added video.';
 	}
-
-	videos.value = await ky.get('videos').json();
-
-	createVideoDialog.value = false;
-	selectedVideo.value = false;
-	search.value = '';
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added video.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const editVideo = async (videoId) => {
-	const result = await ky
-		.post(`videos/id/${videoId}`, {
-			json: {
-				title: editingVideo.value.title,
-				gameId: selectedGame.value?.id,
-				thumbnail_url: editingVideo.value.thumbnail_url,
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.post(`videos/id/${videoId}`, {
+				json: {
+					title: editingVideo.value.title,
+					gameId: selectedGame.value?.id,
+					thumbnail_url: editingVideo.value.thumbnail_url,
+				},
+			})
+			.json();
+	
+		videos.value = await ky.get('videos').json();
+	
+		editVideoDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully edited video.';
 	}
-
-	videos.value = await ky.get('videos').json();
-
-	editVideoDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully edited video.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 const openEditVideoDialog = async (video) => {
@@ -916,31 +932,25 @@ const openDeleteDialog = video => {
 };
 
 const deleteVideo = async (videoId) => {
-	const result = await ky.post(`videos/id/${videoId}/delete`, {
-		json: {
-			force: true,
-		},
-	}).json();
-
-	if (result.status !== 200) {
+	try {
+		await ky.post(`videos/id/${videoId}/delete`, {
+			json: {
+				force: true,
+			},
+		}).json();
+	
+		videos.value = await ky.get('videos').json();
+	
+		deleteDialog.value = false;
+	
 		snackbar.value = true;
-		
-		// Still has videos
-		if (result.errorCode === 19) {
-			snackbarText.value = 'One or more playlists still use this video. Please delete the video from the playlist first.';
-		}
-		else {
-			snackbarText.value = result.message;
-		}
-
-		return;
+		snackbarText.value = 'Successfully deleted video.';
 	}
-
-	videos.value = await ky.get('videos').json();
-
-	deleteDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully deleted video.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 </script>

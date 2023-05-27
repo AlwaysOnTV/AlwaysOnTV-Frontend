@@ -226,26 +226,28 @@ const openAuth = async () => {
 };
 
 const saveSettings = async () => {
-	const data = await ky
-		.post('settings', {
-			json: {
-				title_replacement: streamingTitle.value,
-				client_id: clientID.value,
-				client_secret: clientSecret.value,
-				use_random_playlist: selected.value,
-			},
-		})
-		.json();
-	
-	if (data.status !== 200) {
+	try {
+		await ky
+			.post('settings', {
+				json: {
+					title_replacement: streamingTitle.value,
+					client_id: clientID.value,
+					client_secret: clientSecret.value,
+					use_random_playlist: selected.value,
+				},
+			})
+			.json();
+		
+		await getSettings();
+		
 		snackbar.value = true;
-		snackbarText.value = data.message;
-		return;
+		snackbarText.value = 'Successfully updated settings.';
 	}
-	
-	await getSettings();
-	
-	snackbar.value = true;
-	snackbarText.value = 'Successfully updated settings.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 </script>

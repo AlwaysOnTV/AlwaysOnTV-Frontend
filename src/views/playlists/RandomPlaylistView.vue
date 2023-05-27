@@ -269,26 +269,28 @@ const addNewVideoToPlaylist = async () => {
 		title: selectedVideo.value.title,
 	};
 
-	const addedvideoq = await ky
-		.put('random-playlist', {
-			json: {
-				videoIds: videoData.id,
-			},
-		})
-		.json();
-
-	if (addedvideoq.status !== 200) {
+	try {
+		await ky
+			.put('random-playlist', {
+				json: {
+					videoIds: videoData.id,
+				},
+			})
+			.json();
+	
+		playlistData.value = await ky.get('random-playlist').json();
+	
+		addVideoDialog.value = false;
+	
 		snackbar.value = true;
-		snackbarText.value = addedvideoq.message;
-		return;
+		snackbarText.value = 'Successfully added video to playlist.';
 	}
-
-	playlistData.value = await ky.get('random-playlist').json();
-
-	addVideoDialog.value = false;
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully added video to playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 onMounted(async () => {
@@ -296,23 +298,25 @@ onMounted(async () => {
 });
 
 const removeVideoFromPlaylist = async (videoId) => {
-	const result = await ky
-		.post('random-playlist/delete', {
-			json: {
-				videoIds: videoId,
-			},
-		})
-		.json();
-
-	if (result.status !== 200) {
+	try {
+		await ky
+			.post('random-playlist/delete', {
+				json: {
+					videoIds: videoId,
+				},
+			})
+			.json();
+	
+		playlistData.value = await ky.get('random-playlist').json();
+	
 		snackbar.value = true;
-		snackbarText.value = result.message;
-		return;
+		snackbarText.value = 'Successfully deleted video from random playlist.';
 	}
-
-	playlistData.value = await ky.get('random-playlist').json();
-
-	snackbar.value = true;
-	snackbarText.value = 'Successfully deleted video from random playlist.';
+	catch (error) {
+		const { message } = await error.response.json();
+		
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 </script>
