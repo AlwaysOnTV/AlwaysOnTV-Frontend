@@ -72,14 +72,14 @@ const updatePasswordAndAuth = () => {
 
 const tryAuth = async () => {
 	try {		
-		const result = await auth.post('').json();
+		const { authenticated } = await auth.post('').json();
 
-		if (result.status === 200) {
+		if (authenticated) {
 			emit('authenticate');
 		}
 	}
 	catch (error) {
-		const { status, message } = await error.response.json();
+		const message = await error.response.text();
 		
 		if (status === 401) {
 			validPassword.value = message;

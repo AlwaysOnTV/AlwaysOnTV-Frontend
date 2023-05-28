@@ -7,12 +7,12 @@ export let isLoading = ref(false);
 
 export const API_URL = import.meta.env.VITE_API_URL || '/';
 
-function addAuthorization (options) {
+function addAuthorization (request) {
 	const { cookies } = useCookies();
 
 	if (!cookies.isKey('password')) return;
 
-	options.headers.set('Authorization', cookies.get('password'));
+	request.headers.set('Authorization', cookies.get('password'));
 }
 
 const api = ky.create({
@@ -23,7 +23,17 @@ const api = ky.create({
 			addAuthorization,
 		],
 		afterResponse: [
-			() => isLoading.value = false,
+			async (_request, _options, response) => {
+				isLoading.value = false;
+
+				const { data, message } = await response.json();
+
+				const body = typeof data === 'object' ? JSON.stringify(data) : message;
+
+				return new Response(body, {
+					status: response.status,
+				});
+			},
 		],
 	},
 });
@@ -34,6 +44,17 @@ export const auth = ky.create({
 		beforeRequest: [
 			addAuthorization,
 		],
+		afterResponse: [
+			async (_request, _options, response) => {
+				const { data, message } = await response.json();
+
+				const body = typeof data === 'object' ? JSON.stringify(data) : message;
+
+				return new Response(body, {
+					status: response.status,
+				});
+			},
+		],
 	},
 });
 
@@ -42,6 +63,17 @@ export const queue = ky.create({
 	hooks: {
 		beforeRequest: [
 			addAuthorization,
+		],
+		afterResponse: [
+			async (_request, _options, response) => {
+				const { data, message } = await response.json();
+
+				const body = typeof data === 'object' ? JSON.stringify(data) : message;
+
+				return new Response(body, {
+					status: response.status,
+				});
+			},
 		],
 	},
 });

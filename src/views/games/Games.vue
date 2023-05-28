@@ -395,7 +395,7 @@ const addNewGame = async () => {
 		snackbarText.value = 'Successfully added game.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -422,7 +422,7 @@ const deleteGame = async (game) => {
 		deleteDialog.value = false;
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;

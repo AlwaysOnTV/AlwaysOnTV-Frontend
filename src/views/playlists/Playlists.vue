@@ -505,7 +505,7 @@ const searchForYTplaylists = _.debounce(async () => {
 			selectedYTplaylist.value = data;
 		}
 		catch (error) {
-			const { message } = await error.response.json();
+			const message = await error.response.text();
 		
 			snackbar.value = true;
 			snackbarText.value = message;
@@ -558,7 +558,7 @@ const queuePlaylist = async () => {
 		snackbarText.value = 'Successfully queued playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 			
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -646,7 +646,7 @@ const createPlaylist = async () => {
 		snackbarText.value = 'Successfully added playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -674,7 +674,7 @@ const importPlaylist = async () => {
 		snackbarText.value = 'Successfully imported playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;

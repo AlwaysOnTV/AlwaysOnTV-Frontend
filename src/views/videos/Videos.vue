@@ -659,7 +659,7 @@ const addVideoToPlaylist = async () => {
 		snackbarText.value = 'Successfully added video to playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -709,7 +709,7 @@ const queueVideo = async (videoId) => {
 		snackbarText.value = 'Successfully queued video.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -818,7 +818,7 @@ const searchForVideos = async () => {
 			selectedVideo.value = data;
 		}
 		catch (error) {
-			const { message } = await error.response.json();
+			const message = await error.response.text();
 		
 			snackbar.value = true;
 			snackbarText.value = message;
@@ -876,7 +876,7 @@ const addNewVideo = async () => {
 		snackbarText.value = 'Successfully added video.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -903,7 +903,7 @@ const editVideo = async (videoId) => {
 		snackbarText.value = 'Successfully edited video.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -947,7 +947,7 @@ const deleteVideo = async (videoId) => {
 		snackbarText.value = 'Successfully deleted video.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
