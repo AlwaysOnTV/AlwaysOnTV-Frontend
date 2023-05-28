@@ -428,4 +428,46 @@ const deleteGame = async (game) => {
 		snackbarText.value = message;
 	}
 };
+
+const search = ref('');
+const loadingGames = ref(true);
+
+let searchDebouncer = false;
+
+watch(search, (newValue) => {
+	if (newValue === '') return;
+	clearTimeout(searchDebouncer);
+	searchDebouncer = setTimeout(() => {
+		searchForGame();
+	}, 1000);
+});
+
+const searchForGame = async () => {
+	if (!search.value) {
+		selectedGame.value = {};
+	} else {
+		const searchTerm = search.value.toLocaleLowerCase();
+		loadingGames.value = true;
+		const games = await ky
+			.post('twitch/get-game', {
+				json: {
+					name: searchTerm,
+				},
+			})
+			.json();
+
+		loadingGames.value = false;
+
+		if (!games.length) {
+			console.error('No games found with that name');
+			return;
+		}
+		
+		selectedGame.value = games[0];
+		selectedGame.value.box_art_url = selectedGame.value.box_art_url.replace(
+			'{width}x{height}',
+			'500x700',
+		);
+	}
+};
 </script>
