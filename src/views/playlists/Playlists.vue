@@ -230,14 +230,14 @@
 				<v-container>
 					<v-row>
 						<v-text-field
-							v-model="search"
+							v-model="searchInput"
 							append-inner-icon="mdi-magnify"
 							label="YouTube Playlist URL / Playlist ID"
 							placeholder="https://www.youtube.com/playlist?list=PLn705Am2h2mu31k50RreRmotREPDHqJoz"
 							required
 							variant="solo-filled"
 							hide-details
-							:loading="loadingYTvideos"
+							:loading="isLoading"
 						/>
 					</v-row>
 
@@ -469,24 +469,21 @@ const getGameID = () => {
 
 // ---
 
-const search = ref('');
-const loadingYTvideos = ref(false);
+const searchInput = ref('');
 const selectedYTplaylist = ref(false);
 const addVideosToRandomPlaylist = ref(true);
 
-watch(search, (newValue) => {
+watch(searchInput, (newValue) => {
 	if (newValue === '') return;
 
 	searchForYTplaylists();
 });
 
 const searchForYTplaylists = _.debounce(async () => {
-	if (!search.value) {
+	if (!searchInput.value) {
 		selectedYTplaylist.value = false;
 	} else {
-		const searchTerm = search.value;
-		
-		loadingYTvideos.value = true;
+		const searchTerm = searchInput.value;
 		
 		try {
 			const data = await ky
@@ -510,8 +507,6 @@ const searchForYTplaylists = _.debounce(async () => {
 			snackbar.value = true;
 			snackbarText.value = message;
 		}
-
-		loadingYTvideos.value = false;
 	}
 }, 500);
 

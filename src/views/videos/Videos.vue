@@ -205,14 +205,14 @@
 				<v-container>
 					<v-row>
 						<v-text-field
-							v-model="search"
+							v-model="searchInput"
 							append-inner-icon="mdi-magnify"
 							label="YouTube URL / Video ID"
 							placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 							required
 							variant="solo-filled"
 							hide-details
-							:loading="loadingVideos"
+							:loading="isLoading"
 						/>
 					</v-row>
 
@@ -671,7 +671,7 @@ const addVideoToPlaylist = async () => {
 const selectedVideo = ref(false);
 const createVideoDialog = ref(false);
 const videos = ref([]);
-const search = ref('');
+const searchInput = ref('');
 const deleteDialog = ref(false);
 const deletingVideo = ref(false);
 const editingVideo = ref(false);
@@ -682,8 +682,6 @@ const addVideoToRandomPlaylist = ref(true);
 const videoTitle = ref('');
 const videoGameId = ref('');
 const videoThumbnail = ref('');
-
-const loadingVideos = ref(false);
 
 const snackbar = ref(false);
 const snackbarText = ref('');
@@ -781,25 +779,18 @@ onMounted(async () => {
 	selectedGame.value = await ky.get('games/id/499973').json();
 });
 
-let searchVideoDebouncer = false;
-
-watch(search, (newValue) => {
+watch(searchInput, (newValue) => {
 	if (newValue === '') return;
 
-	clearTimeout(searchVideoDebouncer);
-
-	searchVideoDebouncer = setTimeout(() => {
-		searchForVideos();
-	}, 500);
+	searchForVideos();
 });
 
-const searchForVideos = async () => {
-	if (!search.value) {
+const searchForVideos = _.debounce(async () => {
+	if (!searchInput.value) {
 		selectedVideo.value = false;
 	} else {
-		const searchTerm = search.value;
+		const searchTerm = searchInput.value;
 
-		loadingVideos.value = true;
 
 		try {
 			const data = await ky
@@ -824,9 +815,8 @@ const searchForVideos = async () => {
 			snackbarText.value = message;
 		}
 
-		loadingVideos.value = false;
 	}
-};
+}, 500);
 
 const disableAddVideo = computed(() => {
 	if (!selectedVideo.value?.id || !selectedGame.value?.id) return true;
@@ -870,7 +860,7 @@ const addNewVideo = async () => {
 	
 		createVideoDialog.value = false;
 		selectedVideo.value = false;
-		search.value = '';
+		searchInput.value = '';
 	
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video.';
