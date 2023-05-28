@@ -244,7 +244,7 @@ const saveSettings = async () => {
 		snackbarText.value = 'Successfully updated settings.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;

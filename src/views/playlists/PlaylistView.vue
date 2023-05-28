@@ -412,7 +412,7 @@ const addNewVideoToPlaylist = async () => {
 		snackbarText.value = 'Successfully added video to playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -436,7 +436,7 @@ const deletePlaylist = async () => {
 		});
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -459,7 +459,7 @@ const removeVideoFromPlaylist = async (index) => {
 		snackbarText.value = 'Successfully deleted video from playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -485,7 +485,7 @@ const editPos = async () => {
 		snackbarText.value = 'Successfully edited playlist';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;

@@ -286,7 +286,7 @@ const addNewVideoToPlaylist = async () => {
 		snackbarText.value = 'Successfully added video to playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -313,7 +313,7 @@ const removeVideoFromPlaylist = async (videoId) => {
 		snackbarText.value = 'Successfully deleted video from random playlist.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;

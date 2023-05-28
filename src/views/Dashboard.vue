@@ -543,7 +543,7 @@ const editQueuePosition = async () => {
 		snackbarText.value = 'Successfully edited queue.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -569,7 +569,7 @@ const editQueuePositionStart = async (index) => {
 		snackbarText.value = 'Successfully moved the video to the beginning.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -595,7 +595,7 @@ const editQueuePositionEnd = async (index) => {
 		snackbarText.value = 'Successfully moved the video to the end.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -614,7 +614,7 @@ const deleteVideoFromQueue = async (index) => {
 		snackbarText.value = 'Successfully deleted video from queue.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -678,7 +678,7 @@ const addNewVideoToQueue = async () => {
 		snackbarText.value = 'Successfully added video.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -699,7 +699,7 @@ const clearQueue = async () => {
 		snackbarText.value = 'Successfully cleared queue.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -722,7 +722,7 @@ const addToQueueFromHistory = async (videoId) => {
 		snackbarText.value = 'Successfully added video.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
@@ -752,7 +752,7 @@ const addNewPlaylistToQueue = async () => {
 		snackbarText.value = 'Successfully added playlist to queue.';
 	}
 	catch (error) {
-		const { message } = await error.response.json();
+		const message = await error.response.text();
 		
 		snackbar.value = true;
 		snackbarText.value = message;
