@@ -145,7 +145,7 @@
 				<v-container>
 					<v-row>
 						<v-text-field
-							v-model="search"
+							v-model="searchInput"
 							label="Search"
 							append-inner-icon="mdi-magnify"
 							placeholder="Just Chatting"
@@ -428,4 +428,46 @@ const deleteGame = async (game) => {
 		snackbarText.value = message;
 	}
 };
+
+const searchInput = ref('');
+
+watch(searchInput, (newValue) => {
+	if (newValue === '') return;
+
+	searchForGameOnTwitch();
+});
+
+const searchForGameOnTwitch = _.debounce(async () => {
+	if (!searchInput.value) {
+		selectedGame.value = {};
+	} else {
+		const searchTerm = searchInput.value.toLocaleLowerCase();
+
+		try {
+			const games = await ky
+				.post('twitch/get-game', {
+					json: {
+						name: searchTerm,
+					},
+				})
+				.json();
+
+
+			if (!games.length) {
+				console.error('No games found with that name');
+				return;
+			}
+			selectedGame.value = games[0];
+			selectedGame.value.box_art_url = selectedGame.value.box_art_url.replace(
+				'{width}x{height}',
+				'500x700',
+			);
+		} catch (error) {
+			const message = await error.response.text();
+		
+			snackbar.value = true;
+			snackbarText.value = message;
+		}
+	}
+}, 500);
 </script>
