@@ -65,7 +65,7 @@ watch(password, () => {
 });
 
 const updatePasswordAndAuth = () => {
-	cookies.set('password', password.value);
+	cookies.set('password', password.value, '1y');
 
 	tryAuth();
 };
@@ -75,15 +75,15 @@ const tryAuth = async () => {
 		const { authenticated } = await auth.post('').json();
 
 		if (authenticated) {
+			cookies.set('password', cookies.get('password'), '1y');
+
 			emit('authenticate');
 		}
 	}
 	catch (error) {
-		const message = await error.response.text();
+		const message = error.response.text();
 		
-		if (status === 401) {
-			validPassword.value = message;
-		}
+		validPassword.value = message;
 
 		await passwordField.value.validate();
 	}
