@@ -807,6 +807,11 @@ const searchForVideos = _.debounce(async () => {
 			}
 				
 			selectedVideo.value = data;
+
+			if (selectedVideo.value?.age_restricted) {
+				snackbar.value = true;
+				snackbarText.value = 'Can\'t add video because it\'s age-restricted.';
+			}
 		}
 		catch (error) {
 			const message = await error.response.text();
@@ -821,11 +826,17 @@ const searchForVideos = _.debounce(async () => {
 const disableAddVideo = computed(() => {
 	if (!selectedVideo.value?.id || !selectedGame.value?.id) return true;
 
-	return videos.value.some(
+	const duplicate = videos.value.some(
 		(video) =>
 			video.title === selectedVideo.value?.title ||
             video.id === selectedVideo.value?.id,
 	);
+
+	if (duplicate) return true;
+	
+	if (selectedVideo.value?.age_restricted) return true;
+	
+	return false;
 });
 
 const addNewVideo = async () => {

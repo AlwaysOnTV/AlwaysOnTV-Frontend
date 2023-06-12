@@ -15,6 +15,10 @@ function addAuthorization (request) {
 	request.headers.set('Authorization', cookies.get('password'));
 }
 
+export function getMPDForVideo (videoId) {
+	return `${API_URL}api/youtube/get-mpd?videoId=${videoId}`;
+}
+
 const api = ky.create({
 	prefixUrl: `${API_URL}api`,
 	hooks: {

@@ -3,7 +3,289 @@
 		fluid
 		class="h-100"
 	>
-		<div class="d-flex flex-column h-100">
+		<div
+			v-if="useNewSystem"
+			class="d-flex flex-column h-100"
+		>
+			<v-row>
+				<v-col>
+					<v-card
+						class="h-100"
+					>
+						<div class="d-flex flex-column h-100">
+							<div class="my-4">
+								<div class="d-flex align-center mr-4">
+									<v-card-title class="text-h3 mb-4">
+										Queue
+									</v-card-title>
+
+									<v-spacer />
+							
+									<v-btn
+										class="mx-2"
+										color="blue"
+										variant="outlined"
+										prepend-icon="mdi-plus"
+										@click="openAddVideoDialog"
+									>
+										Add Video To Queue
+									</v-btn>
+
+									<v-btn
+										class="mx-2"
+										color="blue"
+										variant="outlined"
+										prepend-icon="mdi-plus"
+										@click="openAddPlaylistDialog"
+									>
+										Add Playlist To Queue
+									</v-btn>
+
+									<v-btn
+										class="mx-2"
+										color="red"
+										variant="outlined"
+										prepend-icon="mdi-delete"
+										:disabled="isQueueEmpty"
+										@click="deleteDialog = true"
+									>
+										Clear Queue
+									</v-btn>
+								</div>
+	
+								<v-card-subtitle v-if="isQueueEmpty">
+									The queue is empty.
+								</v-card-subtitle>
+								<v-card-subtitle v-else>
+									<span v-if="getQueueLength === 1">
+										There is {{ getQueueLength }} video in the queue.
+									</span>
+									<span v-else>
+										There are {{ getQueueLength }} videos in the queue.
+									</span>
+								</v-card-subtitle>
+
+								<v-card-text class="pb-0">
+									<v-row>
+										<v-spacer />
+										<v-col
+											cols="3"
+											class="text-h6 text-right d-flex flex-column"
+										>
+											<v-spacer />
+											<span>{{ videoProgressString }}</span>
+											<v-spacer />
+										</v-col>
+										<v-col
+											cols="6"
+											class="d-flex flex-column"
+										>
+											<v-spacer />
+											<v-slider
+												v-model="sliderValue"
+												:min="0"
+												:max="videoLength"
+												:disabled="videoLoading"
+												hide-details
+												thumb-label
+												@start="sliderStartDrag"
+												@end="sliderEndDrag"
+											>
+												<template #thumb-label="{}">
+													{{ videoThumb }}
+												</template>
+											</v-slider>
+											<v-spacer />
+										</v-col>
+										<v-col
+											cols="3"
+										>
+											<v-btn
+												class="mr-2"
+												:icon="videoPlaying ? 'mdi-pause' : 'mdi-play'"
+												:loading="videoLoading"
+												@click="updatePlayingState"
+											>
+												<v-tooltip
+													activator="parent"
+													location="top"
+													:eager="false"
+												>
+													{{ videoPlaying ? 'Pause' : 'Play' }}
+												</v-tooltip>
+												<v-icon />
+											</v-btn>
+											<v-btn
+												class="mr-2"
+												icon="mdi-skip-next"
+												:loading="videoLoading"
+												@click="skipVideo"
+											>
+												<v-tooltip
+													activator="parent"
+													location="top"
+													:eager="false"
+												>
+													Skip
+												</v-tooltip>
+												<v-icon />
+											</v-btn>
+											<v-btn
+												icon="mdi-refresh"
+												:loading="videoLoading"
+												@click="refreshVideo"
+											>
+												<v-tooltip
+													activator="parent"
+													location="top"
+													:eager="false"
+												>
+													Refresh
+												</v-tooltip>
+												<v-icon />
+											</v-btn>
+										</v-col>
+										<v-spacer />
+									</v-row>
+								</v-card-text>
+							</div>
+
+							<v-divider thickness="3" />
+
+							<v-card-text
+								style="position: relative; height:100%;"
+							>
+								<v-virtual-scroll
+									style="position: absolute; left: 0; right: 0; top: 0; bottom: 0;"
+									:items="queueData"
+									item-height="100"
+								>
+									<template #default="{ item, index }">								
+										<QueueVideoItem
+											:item="item"
+											:index="index"
+
+											:loading="isLoading"
+
+											@open-edit-pos="openEditQueuePositionDialog"
+											@delete-from-queue="deleteVideoFromQueue"
+											@edit-pos-start="editQueuePositionStart"
+											@edit-pos-end="editQueuePositionEnd"
+										/>
+									</template>
+								</v-virtual-scroll>
+							</v-card-text>
+						</div>
+					</v-card>
+				</v-col>
+				<v-col>
+					<v-card
+						class="h-100"
+					>
+						<div class="d-flex flex-column h-100">
+							<div class="my-4">
+								<v-card-title class="text-h3 my-4">
+									History
+								</v-card-title>
+								<v-card-subtitle v-if="isHistoryEmpty">
+									The history is empty.
+								</v-card-subtitle>
+								<v-card-subtitle v-else>
+									<span v-if="getHistoryLength === 1">
+										There is {{ getHistoryLength }} video in the history.
+									</span>
+									<span v-else>
+										There are {{ getHistoryLength }} videos in the history.
+									</span>
+								</v-card-subtitle>
+							</div>
+
+							<v-divider thickness="3" />
+
+							<v-card-text
+								style="position: relative; height:100%;"
+							>
+								<v-virtual-scroll
+									style="position: absolute; left: 0; right: 0; top: 0; bottom: 0;"
+									:items="historyData"
+									item-height="100"
+								>
+									<template #default="{ item }">
+										<v-list-item
+											class="py-4"
+										>
+											<v-list-item-title>
+												{{ item.title }}
+											</v-list-item-title>
+									
+											<v-list-item-subtitle>
+												<strong>Game:</strong> {{ item.game?.title || item.gameId }}
+												<br>
+												<strong>Played At:</strong> {{ item.played_at }}
+											</v-list-item-subtitle>
+
+											<template #prepend>
+												<v-img
+													:src="item.thumbnail_url"
+													:lazy-src="placeholderImage"
+													:aspect-ratio="16/9"
+													width="125"
+													cover
+													class="mr-5"
+												/>
+
+												<v-btn
+													icon="mdi-youtube"
+													size="x-small"
+													variant="tonal"
+													class="mr-3"
+													color="red"
+													:href="'https://youtu.be/' + item.id"
+													target="_blank"
+												>
+													<v-tooltip
+														activator="parent"
+														location="top"
+														:eager="false"
+													>
+														Watch On YouTube
+													</v-tooltip>
+													<v-icon />
+												</v-btn>
+											</template>
+
+											<template #append>
+												<v-btn
+													icon="mdi-clock-outline"
+													size="x-small"
+													color="orange-darken-4"
+													variant="tonal"
+													class="mr-1"
+													@click="addToQueueFromHistory(item.id)"
+												>
+													<v-tooltip
+														activator="parent"
+														location="top"
+														:eager="false"
+													>
+														Queue Video
+													</v-tooltip>
+													<v-icon />
+												</v-btn>
+											</template>
+										</v-list-item>
+									</template>
+								</v-virtual-scroll>
+							</v-card-text>
+						</div>
+					</v-card>
+				</v-col>
+			</v-row>
+		</div>
+		<div
+			v-else
+			class="d-flex flex-column h-100"
+		>
 			<v-card
 				class="my-4 h-100"
 			>
@@ -52,8 +334,97 @@
 							The queue is empty.
 						</v-card-subtitle>
 						<v-card-subtitle v-else>
-							There are {{ getQueueLength }} videos in the queue.
+							<span v-if="getQueueLength === 1">
+								There is {{ getQueueLength }} video in the queue.
+							</span>
+							<span v-else>
+								There are {{ getQueueLength }} videos in the queue.
+							</span>
 						</v-card-subtitle>
+
+						<v-card-text class="pb-0">
+							<v-row>
+								<v-spacer />
+								<v-col
+									cols="2"
+									class="text-h6 text-right d-flex flex-column"
+								>
+									<v-spacer />
+									<span>{{ videoProgressString }}</span>
+									<v-spacer />
+								</v-col>
+								<v-col
+									cols="6"
+									class="d-flex flex-column"
+								>
+									<v-spacer />
+									<v-slider
+										v-model="sliderValue"
+										:min="0"
+										:max="videoLength"
+										:disabled="videoLoading"
+										hide-details
+										thumb-label
+										@start="sliderStartDrag"
+										@end="sliderEndDrag"
+									>
+										<template #thumb-label="{}">
+											{{ videoThumb }}
+										</template>
+									</v-slider>
+									<v-spacer />
+								</v-col>
+								<v-col
+									cols="2"
+								>
+									<v-btn
+										class="mr-2"
+										:icon="videoPlaying ? 'mdi-pause' : 'mdi-play'"
+										:loading="videoLoading"
+										@click="updatePlayingState"
+									>
+										<v-tooltip
+											activator="parent"
+											location="top"
+											:eager="false"
+										>
+											{{ videoPlaying ? 'Pause' : 'Play' }}
+										</v-tooltip>
+										<v-icon />
+									</v-btn>
+									<v-btn
+										class="mr-2"
+										icon="mdi-skip-next"
+										:loading="videoLoading"
+										@click="skipVideo"
+									>
+										<v-tooltip
+											activator="parent"
+											location="top"
+											:eager="false"
+										>
+											Skip
+										</v-tooltip>
+										<v-icon />
+									</v-btn>
+									<v-btn
+										icon="mdi-refresh"
+										:loading="videoLoading"
+										@click="refreshVideo"
+									>
+										<v-tooltip
+											activator="parent"
+											location="top"
+											:eager="false"
+										>
+											Refresh
+										</v-tooltip>
+										<v-icon />
+									</v-btn>
+								</v-col>
+								<v-spacer />
+							</v-row>
+						</v-card-text>
 					</div>
 
 					<v-divider thickness="3" />
@@ -98,7 +469,12 @@
 							The history is empty.
 						</v-card-subtitle>
 						<v-card-subtitle v-else>
-							There are {{ getHistoryLength }} videos in the history.
+							<span v-if="getHistoryLength === 1">
+								There is {{ getHistoryLength }} video in the history.
+							</span>
+							<span v-else>
+								There are {{ getHistoryLength }} videos in the history.
+							</span>
 						</v-card-subtitle>
 					</div>
 
@@ -458,12 +834,104 @@
 <script setup>
 import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed } from 'vue';
+import { socket } from '@/socket';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
 
 import SelectVideoDialog from '@/composables/SelectVideoDialog.vue';
 import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
 import QueueVideoItem from '@/composables/QueueVideoItem.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+
+// TODO: EXPERIMENTAL, add toggle, add support for mobile
+const useNewSystem = ref(true);
+
+const videoProgress = ref(0);
+const videoLength = ref(0);
+const videoPlaying = ref(false);
+
+const videoThumb = computed(() => {
+	const progress = dayjs.duration(sliderValue.value, 's');
+
+	const progressHours = progress.hours().toString().padStart(2, '0');
+	const progressMinutes = progress.minutes().toString().padStart(2, '0');
+	const progressSeconds = progress.seconds().toString().padStart(2, '0');
+
+	return `${progressHours}:${progressMinutes}:${progressSeconds}`;
+});
+
+const videoProgressString = computed(() => {
+	const total = dayjs.duration(videoLength.value, 's');
+	
+	const totalHours = total.hours().toString().padStart(2, '0');
+	const totalMinutes = total.minutes().toString().padStart(2, '0');
+	const totalSeconds = total.seconds().toString().padStart(2, '0');
+
+	const totalFormat = `${totalHours}:${totalMinutes}:${totalSeconds}`;
+
+	return `${videoThumb.value} / ${totalFormat}`;
+});
+
+const sliderValue = ref(0);
+
+const sliderDragging = ref(false);
+const sliderStartDrag = () => {
+	sliderDragging.value = true;
+};
+
+const sliderEndDrag = (value) => {	
+	socket.emit('set_video_time', value);
+	
+	sliderDragging.value = true;
+	videoLoading.value = true;
+};
+
+const videoLoading = ref(false);
+const skipVideo = () => {
+	videoLoading.value = true;
+
+	socket.emit('skip_video');
+};
+
+const refreshVideo = () => {
+	videoLoading.value = true;
+
+	socket.emit('refresh_video');
+};
+
+socket.on('time_update_dashboard', msg => {
+	if (msg.time <= 1 || sliderDragging.value) {
+		// Reset?
+		videoLoading.value = false;
+		sliderDragging.value = false;
+	}
+
+	videoProgress.value = Math.round(msg.time);
+	videoLength.value = Math.round(msg.time) + Math.round(msg.timeToEnd);
+
+	if (sliderDragging.value) return;
+	sliderValue.value = videoProgress.value;
+});
+
+const updatePlayingState = () => {
+	socket.emit('update_playing_state', !videoPlaying.value);
+};
+
+socket.on('update_playing_state', isPlaying => {
+	videoPlaying.value = isPlaying;
+});
+
+socket.on('next_video', async () => {
+	videoLoading.value = true;
+
+	console.log('waow');
+
+	queueData.value = await ky.get('queue').json();
+	historyData.value = await ky.get('history').json();
+});
 
 // ---
 // Select Video
@@ -607,8 +1075,12 @@ const deleteVideoFromQueue = async (index) => {
 		await ky
 			.delete(`queue/${index}`)
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
+
+		if (index === 0) {
+			skipVideo();
+		}
 	
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from queue.';
@@ -627,7 +1099,6 @@ const deleteDialog = ref(false);
 
 const queueData = ref([]);
 const historyData = ref([]);
-const playlistData = ref([]);
 
 const snackbar = ref(false);
 const snackbarText = ref('');
@@ -635,7 +1106,6 @@ const snackbarText = ref('');
 onMounted(async () => {
 	queueData.value = await ky.get('queue').json();
 	historyData.value = await ky.get('history').json();
-	playlistData.value = await ky.get('playlists').json();
 });
 
 const getQueueLength = computed(() => {
