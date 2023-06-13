@@ -1,21 +1,10 @@
 <template>
 	<div>
-		<!-- <video
-			id="videoPlayer"
-			playsinline
-			:controls="!hideControls"
-			autoplay
-		/> -->
 		<video
 			id="videoPlayer"
 			autoplay
 			controls
 		/>
-
-		<!-- <audio
-			id="audioPlayer"
-			group="merge"
-		/> -->
 	</div>
 </template>
 
