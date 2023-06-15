@@ -64,8 +64,6 @@ onUnmounted(() => {
 	if (dashjsPlayer.value) dashjsPlayer.value?.reset();
 });
 
-const avdata = ref({});
-
 const fetchVideo = async (nextVideo = false) => {
 	try {
 		const response = await queue(
@@ -81,7 +79,7 @@ const fetchVideo = async (nextVideo = false) => {
 			return;
 		}
 
-		avdata.value = await response.json();
+		currentVideo.value = await response.json();
 
 		playVideo();
 	}
@@ -167,12 +165,6 @@ const createDashPlayer = () => {
 
 const playVideo = async () => {
 	try {
-		// Set video quality for current video
-		currentVideo.value = {
-			id: avdata.value.id,
-			quality: avdata.value.video_quality,
-		};
-
 		const player = document.getElementById('videoPlayer');
 
 		if (dashjsPlayer.value) {
@@ -181,11 +173,6 @@ const playVideo = async () => {
 		}
 		createDashPlayer();
 		dashjsPlayer.value.initialize(player, getMPDForVideo(currentVideo.value), true);
-
-		// TODO: Still allow combined video formats?
-		if (avdata.value.combined) {
-			// document.getElementById('videoPlayer').src = avdata.value.combined.url;
-		}
 	} catch (error) {
 		const message = await error.response.text();
 

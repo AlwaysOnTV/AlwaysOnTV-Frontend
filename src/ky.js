@@ -16,7 +16,7 @@ function addAuthorization (request) {
 }
 
 export function getMPDForVideo (video) {
-	return `${API_URL}api/youtube/get-mpd?videoId=${video.id}&videoQuality=${video.quality}`;
+	return `${API_URL}api/youtube/get-mpd?videoId=${video.id}&videoQuality=${video.video_quality}`;
 }
 
 const api = ky.create({
