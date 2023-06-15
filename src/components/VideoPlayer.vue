@@ -23,6 +23,8 @@ const dashjsPlayer = ref(false);
 const plyrPlayer = ref(false);
 const videoBitrates = ref([]);
 
+const currentVideo = ref({});
+
 const plyrShowControls = ref('flex');
 const bodyShowScrollbar = ref('none');
 
@@ -165,6 +167,12 @@ const createDashPlayer = () => {
 
 const playVideo = async () => {
 	try {
+		// Set video quality for current video
+		currentVideo.value = {
+			id: avdata.value.id,
+			quality: avdata.value.video_quality,
+		};
+
 		const player = document.getElementById('videoPlayer');
 
 		if (dashjsPlayer.value) {
@@ -172,7 +180,7 @@ const playVideo = async () => {
 			dashjsPlayer.value = false;
 		}
 		createDashPlayer();
-		dashjsPlayer.value.initialize(player, getMPDForVideo(avdata.value.id), true);
+		dashjsPlayer.value.initialize(player, getMPDForVideo(currentVideo.value), true);
 
 		// TODO: Still allow combined video formats?
 		if (avdata.value.combined) {
