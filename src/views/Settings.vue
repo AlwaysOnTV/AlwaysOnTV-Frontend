@@ -29,7 +29,7 @@
 							item-title="name"
 							item-value="quality"
 							persistent-hint
-							hint="Changing this currently requires a refresh of the player."
+							hint="Will be applied to the next video"
 							label="Max. Video Quality"
 						/>
 					</v-card-text>
