@@ -902,7 +902,7 @@ const refreshVideo = () => {
 	socket.emit('refresh_video');
 };
 
-socket.on('time_update_dashboard', msg => {
+socket.on('update_dashboard', msg => {
 	if (msg.time <= 1 || sliderDragging.value) {
 		// Reset?
 		videoLoading.value = false;
@@ -911,6 +911,8 @@ socket.on('time_update_dashboard', msg => {
 
 	videoProgress.value = Math.round(msg.time);
 	videoLength.value = Math.round(msg.time) + Math.round(msg.timeToEnd);
+
+	videoPlaying.value = msg.isPlaying;
 
 	if (sliderDragging.value) return;
 	sliderValue.value = videoProgress.value;
@@ -926,8 +928,6 @@ socket.on('update_playing_state', isPlaying => {
 
 socket.on('next_video', async () => {
 	videoLoading.value = true;
-
-	console.log('waow');
 
 	queueData.value = await ky.get('queue').json();
 	historyData.value = await ky.get('history').json();

@@ -23,6 +23,15 @@
 							hide-details
 							label="Use random video playlist"
 						/>
+						<v-select
+							v-model="selectedVideoQuality"
+							:items="videoQualityOptions"
+							item-title="name"
+							item-value="quality"
+							persistent-hint
+							hint="Changing this currently requires a refresh of the player."
+							label="Max. Video Quality"
+						/>
 					</v-card-text>
 				</v-card>
 
@@ -140,6 +149,17 @@ const showClientID = ref(false);
 const showClientSecret = ref(false);
 const isAuthenticating = ref(false);
 const useRandomPlaylist = ref(false);
+
+const selectedVideoQuality = ref(null);
+const videoQualityOptions = [
+	{ quality: 360, name: '360p' },
+	{ quality: 480, name: '480p' },
+	{ quality: 720, name: '720p' },
+	{ quality: 1080, name: '1080p' },
+	{ quality: 1440, name: '1440p' },
+	{ quality: 2160, name: '2160p' },
+];
+
 const twitchEnabled = ref(false);
 
 const streamingTitle = ref('');
@@ -175,6 +195,9 @@ const canSave = computed(() => {
 	if (useRandomPlaylist.value !== settingsData.value?.use_random_playlist)
 		return true;
 
+	if (selectedVideoQuality.value !== settingsData.value?.max_video_quality)
+		return true;
+
 	return false;
 });
 
@@ -194,6 +217,7 @@ const getSettings = async () => {
 	clientID.value = settingsData.value.twitch.client_id;
 	clientSecret.value = settingsData.value.twitch.client_secret;
 	useRandomPlaylist.value = settingsData.value.use_random_playlist;
+	selectedVideoQuality.value = videoQualityOptions.find(q => q.quality === settingsData.value.max_video_quality)?.quality;
 };
 
 onMounted(getSettings);
@@ -240,6 +264,7 @@ const openAuth = async () => {
 
 const saveSettings = async () => {
 	try {
+
 		await ky
 			.post('settings', {
 				json: {
@@ -248,6 +273,7 @@ const saveSettings = async () => {
 					client_id: clientID.value,
 					client_secret: clientSecret.value,
 					use_random_playlist: useRandomPlaylist.value,
+					max_video_quality: selectedVideoQuality.value,
 				},
 			})
 			.json();

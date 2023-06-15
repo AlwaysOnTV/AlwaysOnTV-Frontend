@@ -121,7 +121,7 @@ const createDashPlayer = () => {
 	});
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_TIME_UPDATED'], (e) => {
-		socket.emit('time_update', { timeToEnd: e.timeToEnd, time: e.time });
+		socket.emit('playback_update', { timeToEnd: e.timeToEnd, time: e.time, isPlaying: plyrPlayer.value.playing });
 	});
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_PLAYING'], () => {

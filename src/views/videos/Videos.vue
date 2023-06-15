@@ -181,7 +181,10 @@
 						<v-spacer />
 
 						<v-card-subtitle>
-							<strong>Video ID:</strong> {{ item.id }}
+							<strong>Video ID:</strong> <a
+								:href="`https://youtube.com/watch?v=${item.id}`"
+								target="_blank"
+							>{{ item.id }}</a>
 						</v-card-subtitle>
 						<v-card-subtitle>
 							<strong>Game:</strong> {{ item.gameTitle }}
