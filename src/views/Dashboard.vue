@@ -69,31 +69,29 @@
 
 								<v-card-text class="pb-0">
 									<v-row>
-										<v-spacer />
-										<v-col
-											cols="12"
-											md="3"
-											class="text-h6 d-flex flex-column"
-											:class="{
-												'text-right': display.mdAndUp.value,
-												'text-center': display.smAndDown.value
-											}"
-										>
-											<v-spacer />
-											<span>{{ videoProgressString }}</span>
-											<v-spacer />
+										<v-col cols="3">
+											<v-img
+												:src="firstQueueItem.thumbnail_url"
+												:lazy-src="placeholderImage"
+												:aspect-ratio="16/9"
+												width="auto"
+												cover
+												class="mr-5"
+											/>
 										</v-col>
 										<v-col
 											cols="12"
-											md="6"
-											class="d-flex flex-column"
+											md="9"
+											class="d-flex flex-column text-center"
 										>
-											<v-spacer />
+											<span class="text-h5 mb-2">{{ firstQueueItem.title }}</span>
+											<span class="text-subtitle-1">{{ videoProgressString }}</span>
 											<v-slider
 												v-model="sliderValue"
 												:min="0"
 												:max="videoLength"
 												:disabled="videoLoading"
+												density="compact"
 												hide-details
 												thumb-label
 												@start="sliderStartDrag"
@@ -103,61 +101,56 @@
 													{{ videoThumb }}
 												</template>
 											</v-slider>
-											<v-spacer />
+
+											<div class="d-flex flex-row">
+												<v-spacer />
+												<v-btn
+													class="mr-2"
+													:icon="videoPlaying ? 'mdi-pause' : 'mdi-play'"
+													:loading="videoLoading"
+													@click="updatePlayingState"
+												>
+													<v-tooltip
+														activator="parent"
+														location="top"
+														:eager="false"
+													>
+														{{ videoPlaying ? 'Pause' : 'Play' }}
+													</v-tooltip>
+													<v-icon />
+												</v-btn>
+												<v-btn
+													class="mr-2"
+													icon="mdi-skip-next"
+													:loading="videoLoading"
+													@click="skipVideo"
+												>
+													<v-tooltip
+														activator="parent"
+														location="top"
+														:eager="false"
+													>
+														Skip
+													</v-tooltip>
+													<v-icon />
+												</v-btn>
+												<v-btn
+													icon="mdi-refresh"
+													:loading="videoLoading"
+													@click="refreshVideo"
+												>
+													<v-tooltip
+														activator="parent"
+														location="top"
+														:eager="false"
+													>
+														Refresh
+													</v-tooltip>
+													<v-icon />
+												</v-btn>
+												<v-spacer />
+											</div>
 										</v-col>
-										<v-col
-											cols="12"
-											md="3"
-											class="d-flex flex-row"
-										>
-											<v-spacer />
-											<v-btn
-												class="mr-2"
-												:icon="videoPlaying ? 'mdi-pause' : 'mdi-play'"
-												:loading="videoLoading"
-												@click="updatePlayingState"
-											>
-												<v-tooltip
-													activator="parent"
-													location="top"
-													:eager="false"
-												>
-													{{ videoPlaying ? 'Pause' : 'Play' }}
-												</v-tooltip>
-												<v-icon />
-											</v-btn>
-											<v-btn
-												class="mr-2"
-												icon="mdi-skip-next"
-												:loading="videoLoading"
-												@click="skipVideo"
-											>
-												<v-tooltip
-													activator="parent"
-													location="top"
-													:eager="false"
-												>
-													Skip
-												</v-tooltip>
-												<v-icon />
-											</v-btn>
-											<v-btn
-												icon="mdi-refresh"
-												:loading="videoLoading"
-												@click="refreshVideo"
-											>
-												<v-tooltip
-													activator="parent"
-													location="top"
-													:eager="false"
-												>
-													Refresh
-												</v-tooltip>
-												<v-icon />
-											</v-btn>
-											<v-spacer />
-										</v-col>
-										<v-spacer />
 									</v-row>
 								</v-card-text>
 							</div>
@@ -169,13 +162,13 @@
 							>
 								<v-virtual-scroll
 									style="position: absolute; left: 0; right: 0; top: 0; bottom: 0;"
-									:items="queueData"
+									:items="getQueueWithoutFirst"
 									item-height="100"
 								>
 									<template #default="{ item, index }">								
 										<QueueVideoItem
 											:item="item"
-											:index="index"
+											:index="index + 1"
 
 											:loading="isLoading"
 
@@ -586,13 +579,17 @@ import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
 import QueueVideoItem from '@/composables/QueueVideoItem.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
-import { useDisplay } from 'vuetify/lib/framework.mjs';
-
-const display = useDisplay();
 
 const videoProgress = ref(0);
 const videoLength = ref(0);
 const videoPlaying = ref(false);
+
+const firstQueueItem = computed(() => {
+	return queueData.value.length ? queueData.value[0] : {
+		title: '',
+		thumbnail_url: placeholderImage,
+	};
+});
 
 const videoThumb = computed(() => {
 	const progress = dayjs.duration(sliderValue.value, 's');
@@ -617,6 +614,7 @@ const videoProgressString = computed(() => {
 });
 
 const sliderValue = ref(0);
+const requestUpdate = ref(false);
 
 const sliderDragging = ref(false);
 const sliderStartDrag = () => {
@@ -626,8 +624,9 @@ const sliderStartDrag = () => {
 const sliderEndDrag = (value) => {	
 	socket.emit('set_video_time', value);
 	
-	sliderDragging.value = true;
 	videoLoading.value = true;
+	sliderDragging.value = false;
+	requestUpdate.value = true;
 };
 
 const videoLoading = ref(false);
@@ -644,9 +643,9 @@ const refreshVideo = () => {
 };
 
 socket.on('update_dashboard', msg => {
-	if (msg.time <= 1 || sliderDragging.value) {
+	if (msg.time <= 1 || requestUpdate.value) {
 		videoLoading.value = false;
-		sliderDragging.value = false;
+		requestUpdate.value = false;
 	}
 
 	videoProgress.value = Math.round(msg.time);
@@ -817,10 +816,6 @@ const deleteVideoFromQueue = async (index) => {
 			.json();
 
 		queueData.value = await ky.get('queue').json();
-
-		if (index === 0) {
-			skipVideo();
-		}
 	
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from queue.';
@@ -848,12 +843,19 @@ onMounted(async () => {
 	historyData.value = await ky.get('history').json();
 });
 
+const getQueueWithoutFirst = computed(() => {
+	const queueCopy = [...queueData.value];
+	queueCopy.shift();
+
+	return queueCopy;
+});
+
 const getQueueLength = computed(() => {
-	return queueData.value.length;
+	return getQueueWithoutFirst.value.length;
 });
 
 const isQueueEmpty = computed(() => {
-	return !getQueueLength.value;
+	return !getQueueWithoutFirst.value.length;
 });
 
 const getHistoryLength = computed(() => {
