@@ -4,23 +4,23 @@ import { createRouter, createWebHistory } from 'vue-router';
 const routes = [
 	{
 		path: '/',
-		name: 'home',
-		meta: {
-			title: 'Home',
-		},
-		// route level code-splitting
-		// this generates a separate chunk (about.[hash].js) for this route
-		// which is lazy-loaded when the route is visited.
-		component: () => import(/* webpackChunkName: "home" */ '@/views/Home.vue'),
-	},
-	{
-		path: '/dashboard',
 		name: 'dashboard',
 		meta: {
 			title: 'Dashboard',
 		},
+		// route level code-splitting
+		// this generates a separate chunk (about.[hash].js) for this route
+		// which is lazy-loaded when the route is visited.
+		component: () => import(/* webpackChunkName: "dashboard" */ '@/views/Dashboard.vue'),
+	},
+	{
+		path: '/video',
+		name: 'video-player',
+		meta: {
+			title: 'Video Player',
+		},
 		component: () =>
-			import(/* webpackChunkName: "home" */ '@/views/Dashboard.vue'),
+			import(/* webpackChunkName: "video-player" */ '@/views/VideoPlayer.vue'),
 	},
 	{
 		path: '/settings',
@@ -29,7 +29,7 @@ const routes = [
 			title: 'Settings',
 		},
 		component: () =>
-			import(/* webpackChunkName: "home" */ '@/views/Settings.vue'),
+			import(/* webpackChunkName: "settings" */ '@/views/Settings.vue'),
 	},
 	{
 		path: '/games',
@@ -38,7 +38,7 @@ const routes = [
 			title: 'Games',
 		},
 		component: () =>
-			import(/* webpackChunkName: "home" */ '@/views/games/Games.vue'),
+			import(/* webpackChunkName: "games" */ '@/views/games/Games.vue'),
 	},
 	{
 		path: '/videos',
@@ -47,7 +47,7 @@ const routes = [
 			title: 'Videos',
 		},
 		component: () =>
-			import(/* webpackChunkName: "home" */ '@/views/videos/Videos.vue'),
+			import(/* webpackChunkName: "videos" */ '@/views/videos/Videos.vue'),
 	},
 	{
 		path: '/playlists',
@@ -56,7 +56,7 @@ const routes = [
 			title: 'Playlists',
 		},
 		component: () =>
-			import(/* webpackChunkName: "home" */ '@/views/playlists/Playlists.vue'),
+			import(/* webpackChunkName: "playlists" */ '@/views/playlists/Playlists.vue'),
 	},
 	{
 		path: '/playlists/:id',
@@ -65,7 +65,7 @@ const routes = [
 			title: 'Playlists',
 		},
 		component: () =>
-			import(/* webpackChunkName: "home" */ '@/views/playlists/PlaylistView.vue'),
+			import(/* webpackChunkName: "playlist-view" */ '@/views/playlists/PlaylistView.vue'),
 	},
 	{
 		path: '/playlists/random',
@@ -74,7 +74,7 @@ const routes = [
 			title: 'Random Playlist',
 		},
 		component: () =>
-			import(/* webpackChunkName: "home" */ '@/views/playlists/RandomPlaylistView.vue'),
+			import(/* webpackChunkName: "random-playlist-view" */ '@/views/playlists/RandomPlaylistView.vue'),
 	},
 ];
 

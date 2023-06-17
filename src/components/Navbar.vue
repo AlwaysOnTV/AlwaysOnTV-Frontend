@@ -20,7 +20,12 @@
 				v-for="item in navItems"
 				:key="item.title"
 				:to="{ name: item.name }"
+				color="primary"
 			>
+				<template #prepend>
+					<v-icon :icon="item.icon" />
+				</template>
+
 				{{ item.title }}
 			</v-list-item>
 		</v-list>
@@ -44,28 +49,34 @@ emitter.$on('navbar_update', isHidden => {
 const drawer = ref(false);
 const navItems = [
 	{
-		title: 'Home',
-		name: 'home',
-	},
-	{
 		title: 'Dashboard',
 		name: 'dashboard',
+		icon: 'mdi-home',
+	},
+	{
+		title: 'Video Player',
+		name: 'video-player',
+		icon: 'mdi-television',
 	},
 	{
 		title: 'Playlists',
 		name: 'playlists',
+		icon: 'mdi-playlist-edit',
 	},
 	{
 		title: 'Games',
 		name: 'games',
+		icon: 'mdi-controller',
 	},
 	{
 		title: 'Videos',
 		name: 'videos',
+		icon: 'mdi-video',
 	},
 	{
 		title: 'Settings',
 		name: 'settings',
+		icon: 'mdi-cog',
 	},
 ];
 

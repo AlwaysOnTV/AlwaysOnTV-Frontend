@@ -59,19 +59,23 @@
 									The queue is empty.
 								</v-card-subtitle>
 								<v-card-subtitle v-else>
-									<span v-if="getQueueLength === 1">
-										There is {{ getQueueLength }} video in the queue.
-									</span>
-									<span v-else>
-										There are {{ getQueueLength }} videos in the queue.
-									</span>
+									<p v-if="getQueueLength === 1">
+										There is <strong>{{ getQueueLength }}</strong> video in the queue
+									</p>
+									<p v-else>
+										There are <strong>{{ getQueueLength }}</strong> videos in the queue
+									</p>
+
+									<p>
+										<strong>Estimated length:</strong> {{ queueLength }}
+									</p>
 								</v-card-subtitle>
 
 								<v-card-text class="pb-0">
 									<v-row>
 										<v-col cols="3">
 											<v-img
-												:src="firstQueueItem.thumbnail_url"
+												:src="currentVideo.thumbnail_url"
 												:lazy-src="placeholderImage"
 												:aspect-ratio="16/9"
 												width="auto"
@@ -84,7 +88,7 @@
 											md="9"
 											class="d-flex flex-column text-center"
 										>
-											<span class="text-h5 mb-2">{{ firstQueueItem.title }}</span>
+											<span class="text-h5 mb-2">{{ currentVideo.title }}</span>
 											<span class="text-subtitle-1">{{ videoProgressString }}</span>
 											<v-slider
 												v-model="sliderValue"
@@ -162,13 +166,13 @@
 							>
 								<v-virtual-scroll
 									style="position: absolute; left: 0; right: 0; top: 0; bottom: 0;"
-									:items="getQueueWithoutFirst"
+									:items="queueData.items"
 									item-height="100"
 								>
 									<template #default="{ item, index }">								
 										<QueueVideoItem
 											:item="item"
-											:index="index + 1"
+											:index="index"
 
 											:loading="isLoading"
 
@@ -199,12 +203,12 @@
 									The history is empty.
 								</v-card-subtitle>
 								<v-card-subtitle v-else>
-									<span v-if="getHistoryLength === 1">
-										There is {{ getHistoryLength }} video in the history.
-									</span>
-									<span v-else>
-										There are {{ getHistoryLength }} videos in the history.
-									</span>
+									<p v-if="getHistoryLength === 1">
+										There is <strong>{{ getHistoryLength }}</strong> video in the history
+									</p>
+									<p v-else>
+										There are <strong>{{ getHistoryLength }}</strong> videos in the history
+									</p>
 								</v-card-subtitle>
 							</div>
 
@@ -215,7 +219,7 @@
 							>
 								<v-virtual-scroll
 									style="position: absolute; left: 0; right: 0; top: 0; bottom: 0;"
-									:items="historyData"
+									:items="historyData.items"
 									item-height="100"
 								>
 									<template #default="{ item }">
@@ -569,48 +573,49 @@
 import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed } from 'vue';
 import { socket } from '@/socket';
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-
-dayjs.extend(duration);
 
 import SelectVideoDialog from '@/composables/SelectVideoDialog.vue';
 import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
 import QueueVideoItem from '@/composables/QueueVideoItem.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+import { Duration } from 'luxon';
+import { asyncEmit } from '../socket.js';
 
 const videoProgress = ref(0);
 const videoLength = ref(0);
 const videoPlaying = ref(false);
 
-const firstQueueItem = computed(() => {
-	return queueData.value.length ? queueData.value[0] : {
-		title: '',
-		thumbnail_url: placeholderImage,
-	};
+const currentVideo = computed(() => {
+	return queueData.value.current_video;
 });
 
 const videoThumb = computed(() => {
-	const progress = dayjs.duration(sliderValue.value, 's');
+	const progress = Duration.fromObject({ seconds: sliderValue.value });
 
-	const progressHours = progress.hours().toString().padStart(2, '0');
-	const progressMinutes = progress.minutes().toString().padStart(2, '0');
-	const progressSeconds = progress.seconds().toString().padStart(2, '0');
-
-	return `${progressHours}:${progressMinutes}:${progressSeconds}`;
+	return progress.toFormat('hh:mm:ss');
 });
 
 const videoProgressString = computed(() => {
-	const total = dayjs.duration(videoLength.value, 's');
-	
-	const totalHours = total.hours().toString().padStart(2, '0');
-	const totalMinutes = total.minutes().toString().padStart(2, '0');
-	const totalSeconds = total.seconds().toString().padStart(2, '0');
+	const total = Duration.fromObject({ seconds: videoLength.value });
 
-	const totalFormat = `${totalHours}:${totalMinutes}:${totalSeconds}`;
+	return `${videoThumb.value} / ${total.toFormat('hh:mm:ss')}`;
+});
 
-	return `${videoThumb.value} / ${totalFormat}`;
+const queueLength = computed(() => {
+	let progress = Duration.fromMillis(0);
+
+	for (const video of queueData.value.items) {
+		progress = progress.plus({ seconds: video.length });
+	}
+
+	if (progress.as('days') >= 1) {
+		const progressWithoutDays = progress.minus({ days: Math.floor(progress.as('days')) });
+		return `${progress.toFormat('d \'days\'')}, ${progressWithoutDays.toFormat('h \'hours\', m \'minutes\', s \'seconds\'')}`;
+	}
+	else {
+		return progress.toFormat('h \'hours\', m \'minutes\', s \'seconds\'');
+	}
 });
 
 const sliderValue = ref(0);
@@ -832,40 +837,45 @@ const deleteVideoFromQueue = async (index) => {
 
 const deleteDialog = ref(false);
 
-const queueData = ref([]);
-const historyData = ref([]);
+const queueData = ref({
+	current_video: {},
+	items: [],
+});
+const historyData = ref({
+	items: [],
+});
 
 const snackbar = ref(false);
 const snackbarText = ref('');
 
 onMounted(async () => {
+	videoLoading.value = true;
+
 	queueData.value = await ky.get('queue').json();
 	historyData.value = await ky.get('history').json();
-});
 
-const getQueueWithoutFirst = computed(() => {
-	const queueCopy = [...queueData.value];
-	queueCopy.shift();
+	videoLength.value = queueData.value.current_video.length || 0;
+	videoProgress.value = await asyncEmit('request_video_time');
+	sliderValue.value = videoProgress.value;
 
-	return queueCopy;
+	videoLoading.value = false;
 });
 
 const getQueueLength = computed(() => {
-	return getQueueWithoutFirst.value.length;
+	return queueData.value.items.length;
 });
 
 const isQueueEmpty = computed(() => {
-	return !getQueueWithoutFirst.value.length;
+	return !getQueueLength.value;
 });
 
 const getHistoryLength = computed(() => {
-	return historyData.value.length;
+	return historyData.value.items.length;
 });
 
 const isHistoryEmpty = computed(() => {
 	return !getHistoryLength.value;
 });
-
 
 const addNewVideoToQueue = async () => {
 	const videoData = {

@@ -189,6 +189,9 @@
 						<v-card-subtitle>
 							<strong>Game:</strong> {{ item.gameTitle }}
 						</v-card-subtitle>
+						<v-card-subtitle>
+							<strong>Length:</strong> {{ formatVideoLength(item.length) }}
+						</v-card-subtitle>
 					</v-card>
 				</v-hover>
 			</v-col>
@@ -593,6 +596,13 @@ import SelectGameDialog from '@/composables/SelectGameDialog.vue';
 import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+import { Duration } from 'luxon';
+
+const formatVideoLength = length => {
+	const progress = Duration.fromObject({ seconds: length });
+
+	return progress.toFormat('hh:mm:ss');
+};
 
 // ---
 // Select Game

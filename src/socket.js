@@ -12,6 +12,17 @@ const URL = process.env.NODE_ENV === 'production' ? undefined : import.meta.env.
 
 export const socket = io(URL);
 
+export async function asyncEmit (eventName, data) {
+	return new Promise((resolve, reject) => {
+		socket.emit(eventName, data);
+		socket.on(eventName, result => {
+			socket.off(eventName);
+			resolve(result);
+		});
+		setTimeout(reject, 1000);
+	});
+}
+
 socket.on('connect', () => {
 	state.connected = true;
 });

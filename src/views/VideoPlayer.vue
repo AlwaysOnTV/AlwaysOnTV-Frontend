@@ -16,13 +16,14 @@ import { onMounted, ref } from 'vue';
 import { MediaPlayer } from 'dashjs';
 import { onUnmounted } from 'vue';
 
-import { socket } from '@/socket';
+import { socket, asyncEmit } from '@/socket';
 
 const hideControls = ref(false);
 const dashjsPlayer = ref(false);
 const plyrPlayer = ref(false);
 const videoBitrates = ref([]);
 
+const currentVideoTime = ref(0);
 const currentVideo = ref({});
 
 const plyrShowControls = ref('flex');
@@ -47,9 +48,13 @@ addEventListener('keypress', event => {
 	plyrShowControls.value = plyrShowControls.value === 'flex' ? 'none' : 'flex';
 });
 
-onMounted(() => {
+onMounted(async () => {
 	// --- Load localStorage value for controls
 	hideControls.value = localStorage.navbar_hidden && JSON.parse(localStorage.navbar_hidden);
+
+	currentVideoTime.value = await asyncEmit('request_video_time');
+
+	// TODO: Request current time of video from server
 
 	emitter.$emit('navbar_update', hideControls.value);
 
@@ -159,6 +164,11 @@ const createDashPlayer = () => {
 
 		if (!plyrPlayer.value) {
 			plyrPlayer.value = new Plyr(videoPlayer, defaultOptions);
+		}
+
+		if (currentVideoTime.value) {
+			plyrPlayer.value.currentTime = currentVideoTime.value;
+			currentVideoTime.value = 0;
 		}
 	});
 };

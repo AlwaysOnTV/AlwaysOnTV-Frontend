@@ -10,10 +10,12 @@
 			<strong>Game:</strong> {{ item.game?.title || item.gameId }}
 		</v-list-item-subtitle>
 
+		<v-list-item-subtitle>
+			<strong>Length:</strong> {{ formatVideoLength(item.length) }}
+		</v-list-item-subtitle>
+
 		<template #prepend>
-			<span
-				class="mx-5 text-center"
-			>
+			<span class="mx-5 text-center">
 				{{ index + 1 }}
 			</span>
 
@@ -125,6 +127,7 @@
 
 <script setup>
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+import { Duration } from 'luxon';
 
 const props = defineProps(['item', 'index', 'isLoading']);
 
@@ -144,5 +147,11 @@ const editPosStart = index => {
 
 const editPosEnd = index => {
 	emit('editPosEnd', index);
+};
+
+const formatVideoLength = length => {
+	const progress = Duration.fromObject({ seconds: length });
+
+	return progress.toFormat('hh:mm:ss');
 };
 </script>
