@@ -105,7 +105,7 @@ const filter = ref(['Title']);
 
 const open = async () => {
 	dialog.value = true;
-	
+
 	loading.value = true;
 
 	videos.value = await ky.get('videos').json();
@@ -120,7 +120,7 @@ const filteredVideos = computed(() => {
 		const searchLower = search.value.toLowerCase();
 		if (filter.value.includes('Title') && video.title.toLowerCase().includes(searchLower)) return true;
 		if (filter.value.includes('Game') && video.gameTitle.toLowerCase().includes(searchLower)) return true;
-		
+
 		return false;
 	});
 });

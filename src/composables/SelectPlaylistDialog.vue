@@ -87,9 +87,9 @@ const playlists = ref([]);
 
 const open = async () => {
 	dialog.value = true;
-	
+
 	loading.value = true;
-	
+
 	playlists.value = await ky.get('playlists').json();
 
 	loading.value = false;

@@ -35,7 +35,7 @@
 				</v-tooltip>
 				<v-icon />
 			</v-btn>
-										
+
 			<v-img
 				:src="item.thumbnail_url"
 				:lazy-src="placeholderImage"

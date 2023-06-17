@@ -15,6 +15,8 @@ module.exports = {
 		semi: ['error', 'always'],
 		'space-before-function-paren': ['error', 'always'],
 		'comma-dangle': ['error', 'always-multiline'],
+		'no-trailing-spaces': ['error'],
+		'no-multiple-empty-lines': ['error', { 'max': 1, 'maxEOF': 0 }],
 	},
 	overrides: [
 		{

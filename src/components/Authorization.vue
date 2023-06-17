@@ -71,7 +71,7 @@ const updatePasswordAndAuth = () => {
 };
 
 const tryAuth = async () => {
-	try {		
+	try {
 		const { authenticated } = await auth.post('').json();
 
 		if (authenticated) {
@@ -82,7 +82,7 @@ const tryAuth = async () => {
 	}
 	catch (error) {
 		const message = error.response.text();
-		
+
 		validPassword.value = message;
 
 		await passwordField.value.validate();

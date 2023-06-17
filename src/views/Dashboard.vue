@@ -22,7 +22,7 @@
 									</v-card-title>
 
 									<v-spacer />
-							
+
 									<v-btn
 										class="mx-2"
 										color="blue"
@@ -54,7 +54,7 @@
 										Clear Queue
 									</v-btn>
 								</div>
-	
+
 								<v-card-subtitle v-if="isQueueEmpty">
 									The queue is empty.
 								</v-card-subtitle>
@@ -169,7 +169,7 @@
 									:items="queueData.items"
 									item-height="100"
 								>
-									<template #default="{ item, index }">								
+									<template #default="{ item, index }">
 										<QueueVideoItem
 											:item="item"
 											:index="index"
@@ -229,7 +229,7 @@
 											<v-list-item-title>
 												{{ item.title }}
 											</v-list-item-title>
-									
+
 											<v-list-item-subtitle>
 												<strong>Game:</strong> {{ item.game?.title || item.gameId }}
 												<br>
@@ -626,9 +626,9 @@ const sliderStartDrag = () => {
 	sliderDragging.value = true;
 };
 
-const sliderEndDrag = (value) => {	
+const sliderEndDrag = (value) => {
 	socket.emit('set_video_time', value);
-	
+
 	videoLoading.value = true;
 	sliderDragging.value = false;
 	requestUpdate.value = true;
@@ -684,7 +684,7 @@ const addVideoDialog = ref(false);
 
 const openAddVideoDialog = () => {
 	addVideoDialog.value = true;
-	openSelectVideoDialog();	
+	openSelectVideoDialog();
 };
 
 const selectVideoDialog = ref(null);
@@ -707,7 +707,7 @@ const addPlaylistDialog = ref(false);
 
 const openAddPlaylistDialog = () => {
 	addPlaylistDialog.value = true;
-	openSelectPlaylistDialog();	
+	openSelectPlaylistDialog();
 };
 
 const selectPlaylistDialog = ref(null);
@@ -746,17 +746,17 @@ const editQueuePosition = async () => {
 				},
 			})
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
-	
+
 		editQueuePositionDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully edited queue.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -772,17 +772,17 @@ const editQueuePositionStart = async (index) => {
 				},
 			})
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
-	
+
 		editQueuePositionDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully moved the video to the beginning.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -798,17 +798,17 @@ const editQueuePositionEnd = async (index) => {
 				},
 			})
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
-	
+
 		editQueuePositionDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully moved the video to the end.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -821,13 +821,13 @@ const deleteVideoFromQueue = async (index) => {
 			.json();
 
 		queueData.value = await ky.get('queue').json();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from queue.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -891,17 +891,17 @@ const addNewVideoToQueue = async () => {
 				},
 			})
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
-	
+
 		addVideoDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -912,17 +912,17 @@ const clearQueue = async () => {
 		await ky
 			.delete('queue')
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
-	
+
 		deleteDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully cleared queue.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -937,15 +937,15 @@ const addToQueueFromHistory = async (videoId) => {
 				},
 			})
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -965,17 +965,17 @@ const addNewPlaylistToQueue = async () => {
 				},
 			})
 			.json();
-	
+
 		queueData.value = await ky.get('queue').json();
-	
+
 		addPlaylistDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added playlist to queue.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}

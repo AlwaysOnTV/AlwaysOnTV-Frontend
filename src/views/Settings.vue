@@ -277,15 +277,15 @@ const saveSettings = async () => {
 				},
 			})
 			.json();
-		
+
 		await getSettings();
-		
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully updated settings.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}

@@ -90,7 +90,7 @@ const fetchVideo = async (nextVideo = false) => {
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		console.error('Error fetching video:', message);
 	}
 };

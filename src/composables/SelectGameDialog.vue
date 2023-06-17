@@ -83,9 +83,9 @@ const games = ref([]);
 
 const open = async () => {
 	dialog.value = true;
-	
+
 	loading.value = true;
-	
+
 	games.value = await ky.get('games').json();
 
 	loading.value = false;

@@ -642,7 +642,7 @@ const openAddToPlaylistDialog = video => {
 	selectedVideoForPlaylist.value = video;
 
 	addToPlaylistDialog.value = true;
-	openSelectPlaylistDialog();	
+	openSelectPlaylistDialog();
 };
 
 const selectPlaylistDialog = ref(null);
@@ -665,15 +665,15 @@ const addVideoToPlaylist = async () => {
 				},
 			})
 			.json();
-	
+
 		addToPlaylistDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video to playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -715,13 +715,13 @@ const queueVideo = async (videoId) => {
 				},
 			})
 			.json();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully queued video.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -804,7 +804,6 @@ const searchForVideos = _.debounce(async () => {
 	} else {
 		const searchTerm = searchInput.value;
 
-
 		try {
 			const data = await ky
 				.post('youtube/get-video', {
@@ -813,12 +812,12 @@ const searchForVideos = _.debounce(async () => {
 					},
 				})
 				.json();
-				
+
 			if (!data) {
 				console.error('No videos found with that name');
 				return;
 			}
-				
+
 			selectedVideo.value = data;
 
 			if (selectedVideo.value?.age_restricted) {
@@ -828,7 +827,7 @@ const searchForVideos = _.debounce(async () => {
 		}
 		catch (error) {
 			const message = await error.response.text();
-		
+
 			snackbar.value = true;
 			snackbarText.value = message;
 		}
@@ -846,9 +845,9 @@ const disableAddVideo = computed(() => {
 	);
 
 	if (duplicate) return true;
-	
+
 	if (selectedVideo.value?.age_restricted) return true;
-	
+
 	return false;
 });
 
@@ -879,19 +878,19 @@ const addNewVideo = async () => {
 				},
 			})
 			.json();
-	
+
 		videos.value = await ky.get('videos').json();
-	
+
 		createVideoDialog.value = false;
 		selectedVideo.value = false;
 		searchInput.value = '';
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -908,17 +907,17 @@ const editVideo = async (videoId) => {
 				},
 			})
 			.json();
-	
+
 		videos.value = await ky.get('videos').json();
-	
+
 		editVideoDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully edited video.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -952,17 +951,17 @@ const deleteVideo = async (videoId) => {
 				force: true,
 			},
 		}).json();
-	
+
 		videos.value = await ky.get('videos').json();
-	
+
 		deleteDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
