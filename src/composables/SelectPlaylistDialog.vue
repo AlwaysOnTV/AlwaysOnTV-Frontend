@@ -52,7 +52,7 @@
 								{{ item.title }}
 							</v-list-item-title>
 
-							<v-list-item-subtitle class="text-h6">
+							<v-list-item-subtitle class="text-h6 font-weight-regular">
 								<strong>Videos:</strong> {{ item.videoCount }}
 							</v-list-item-subtitle>
 

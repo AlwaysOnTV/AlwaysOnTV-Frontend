@@ -180,17 +180,21 @@
 
 						<v-spacer />
 
-						<v-card-subtitle>
-							<strong>Video ID:</strong> <a
-								:href="`https://youtube.com/watch?v=${item.id}`"
-								target="_blank"
-							>{{ item.id }}</a>
-						</v-card-subtitle>
-						<v-card-subtitle>
-							<strong>Game:</strong> {{ item.gameTitle }}
-						</v-card-subtitle>
-						<v-card-subtitle>
-							<strong>Length:</strong> {{ formatVideoLength(item.length) }}
+						<v-card-subtitle class="mb-2">
+							<p>
+								<strong>Video ID:</strong> <a
+									:href="`https://youtube.com/watch?v=${item.id}`"
+									target="_blank"
+								>{{ item.id }}</a>
+							</p>
+
+							<p>
+								<strong>Game:</strong> {{ item.gameTitle }}
+							</p>
+
+							<p>
+								<strong>Length:</strong> {{ formatVideoLength(item.length) }}
+							</p>
 						</v-card-subtitle>
 					</v-card>
 				</v-hover>
@@ -597,6 +601,7 @@ import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
 import { Duration } from 'luxon';
+import { socket } from '@/socket';
 
 const formatVideoLength = length => {
 	const progress = Duration.fromObject({ seconds: length });
@@ -666,6 +671,8 @@ const addVideoToPlaylist = async () => {
 			})
 			.json();
 
+		socket.emit('queue_history_update');
+
 		addToPlaylistDialog.value = false;
 
 		snackbar.value = true;
@@ -715,6 +722,8 @@ const queueVideo = async (videoId) => {
 				},
 			})
 			.json();
+
+		socket.emit('queue_history_update');
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully queued video.';

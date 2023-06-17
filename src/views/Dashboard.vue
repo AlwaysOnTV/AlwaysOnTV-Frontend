@@ -572,7 +572,7 @@
 <script setup>
 import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed } from 'vue';
-import { socket } from '@/socket';
+import { socket, asyncEmit } from '@/socket';
 
 import SelectVideoDialog from '@/composables/SelectVideoDialog.vue';
 import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
@@ -580,7 +580,6 @@ import QueueVideoItem from '@/composables/QueueVideoItem.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
 import { Duration } from 'luxon';
-import { asyncEmit } from '../socket.js';
 
 const videoProgress = ref(0);
 const videoLength = ref(0);
@@ -677,6 +676,11 @@ socket.on('next_video', async () => {
 	historyData.value = await ky.get('history').json();
 });
 
+socket.on('queue_history_update', ({ queue, history }) => {
+	queueData.value = queue;
+	historyData.value = history;
+});
+
 // ---
 // Select Video
 
@@ -747,7 +751,7 @@ const editQueuePosition = async () => {
 			})
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		editQueuePositionDialog.value = false;
 
@@ -773,7 +777,7 @@ const editQueuePositionStart = async (index) => {
 			})
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		editQueuePositionDialog.value = false;
 
@@ -799,7 +803,7 @@ const editQueuePositionEnd = async (index) => {
 			})
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		editQueuePositionDialog.value = false;
 
@@ -820,7 +824,7 @@ const deleteVideoFromQueue = async (index) => {
 			.delete(`queue/${index}`)
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from queue.';
@@ -892,7 +896,7 @@ const addNewVideoToQueue = async () => {
 			})
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		addVideoDialog.value = false;
 
@@ -913,7 +917,7 @@ const clearQueue = async () => {
 			.delete('queue')
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		deleteDialog.value = false;
 
@@ -938,7 +942,7 @@ const addToQueueFromHistory = async (videoId) => {
 			})
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video.';
@@ -966,7 +970,7 @@ const addNewPlaylistToQueue = async () => {
 			})
 			.json();
 
-		queueData.value = await ky.get('queue').json();
+		socket.emit('queue_history_update');
 
 		addPlaylistDialog.value = false;
 

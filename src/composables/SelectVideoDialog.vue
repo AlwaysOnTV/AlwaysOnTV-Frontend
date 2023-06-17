@@ -68,8 +68,12 @@
 								{{ item.title }}
 							</v-list-item-title>
 
-							<v-list-item-subtitle class="text-h6">
+							<v-list-item-subtitle class="text-h6 font-weight-regular">
 								<strong>Game:</strong> {{ item.gameTitle }}
+							</v-list-item-subtitle>
+
+							<v-list-item-subtitle class="text-h6 font-weight-regular">
+								<strong>Video Length:</strong> {{ formatVideoLength(item.length) }}
 							</v-list-item-subtitle>
 
 							<template #prepend>
@@ -78,7 +82,8 @@
 									:lazy-src="placeholderImage"
 									cover
 									:aspect-ratio="16 / 9"
-									width="125"
+									height="100"
+									style="aspect-ratio: 16 / 9;"
 									class="mr-4"
 								/>
 							</template>
@@ -95,6 +100,7 @@ import ky from '@/ky';
 import { ref, computed } from 'vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+import { Duration } from 'luxon';
 
 const loading = ref(false);
 const dialog = ref(false);
@@ -102,6 +108,12 @@ const search = ref(null);
 const videos = ref([]);
 
 const filter = ref(['Title']);
+
+const formatVideoLength = length => {
+	const progress = Duration.fromObject({ seconds: length });
+
+	return progress.toFormat('hh:mm:ss');
+};
 
 const open = async () => {
 	dialog.value = true;

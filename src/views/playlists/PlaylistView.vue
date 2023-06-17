@@ -16,11 +16,11 @@
 						/>
 
 						<v-spacer />
-						
+
 						<span class="text-h3 mx-4 text-center text-wrap">
 							{{ playlistData.title }}
 						</span>
-						
+
 						<v-spacer />
 
 						<div class="d-flex flex-column mr-4">
@@ -36,7 +36,7 @@
 							</v-btn>
 
 							<v-spacer />
-	
+
 							<v-btn
 								block
 								class="my-2"
@@ -403,17 +403,17 @@ const addNewVideoToPlaylist = async () => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get(`playlists/id/${id}`).json();
-	
+
 		addVideoDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video to playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -430,14 +430,14 @@ const deletePlaylist = async () => {
 				force: playlistData.value.videos.length > 0,
 			},
 		}).json();
-	
+
 		router.push({
 			name: 'playlists',
 		});
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -452,15 +452,15 @@ const removeVideoFromPlaylist = async (index) => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get(`playlists/id/${id}`).json();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -476,17 +476,17 @@ const editPos = async () => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get(`playlists/id/${id}`).json();
-	
+
 		editPositionDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully edited playlist';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}

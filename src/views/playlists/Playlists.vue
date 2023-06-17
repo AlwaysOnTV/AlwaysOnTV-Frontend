@@ -13,7 +13,7 @@
 			>
 				Create playlist
 			</v-btn>
-	
+
 			<v-btn
 				color="red"
 				variant="outlined"
@@ -122,7 +122,7 @@
 														</v-tooltip>
 														<v-icon />
 													</v-btn>
-	
+
 													<v-btn
 														class="mx-2"
 														icon="mdi-file-edit"
@@ -433,6 +433,7 @@ import _ from 'lodash';
 import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed, watch } from 'vue';
 import { useDisplay } from 'vuetify';
+import { socket } from '@/socket.js';
 
 import SelectGameDialog from '@/composables/SelectGameDialog.vue';
 
@@ -484,7 +485,7 @@ const searchForYTplaylists = _.debounce(async () => {
 		selectedYTplaylist.value = false;
 	} else {
 		const searchTerm = searchInput.value;
-		
+
 		try {
 			const data = await ky
 				.post('youtube/get-playlist', {
@@ -493,17 +494,17 @@ const searchForYTplaylists = _.debounce(async () => {
 					},
 				})
 				.json();
-	
+
 			if (!data) {
 				console.error('No playlist found with that name');
 				return;
 			}
-	
+
 			selectedYTplaylist.value = data;
 		}
 		catch (error) {
 			const message = await error.response.text();
-		
+
 			snackbar.value = true;
 			snackbarText.value = message;
 		}
@@ -548,13 +549,15 @@ const queuePlaylist = async () => {
 				},
 			})
 			.json();
-			
+
+		socket.emit('queue_history_update');
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully queued playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-			
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -607,12 +610,12 @@ watch(chunkedPlaylists, (newValue) => {
 
 const fetchPlaylists = async () => {
 	playlists.value = await ky.get('playlists').json();
-	
+
 	const randomPlaylist = await ky.get('random-playlist').json();
-	
+
 	randomPlaylist.title = 'Random Playlist';
 	randomPlaylist.randomPlaylist = true;
-	
+
 	playlists.value.unshift(randomPlaylist);
 };
 
@@ -631,18 +634,18 @@ const createPlaylist = async () => {
 				},
 			})
 			.json();
-	
+
 		await fetchPlaylists();
 
 		createPlaylistDialog.value = false;
 		newPlaylistName.value = '';
-		
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -670,7 +673,7 @@ const importPlaylist = async () => {
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
