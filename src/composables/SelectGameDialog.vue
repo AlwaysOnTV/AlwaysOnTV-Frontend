@@ -71,6 +71,9 @@
 </template>
 
 <script setup>
+// TODO: Add option to create new game
+// TODO: Update styling for list - maybe 2 on one row? We need higher thumbnails
+
 import ky from '@/ky';
 import { ref, computed } from 'vue';
 

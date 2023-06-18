@@ -69,6 +69,8 @@
 									{{ playlistData.videoInfo[item.id].title }}
 								</v-list-item-title>
 
+								<!-- // TODO: Show video length and game -->
+
 								<template #prepend>
 									<div class="mx-5 text-center">
 										<span

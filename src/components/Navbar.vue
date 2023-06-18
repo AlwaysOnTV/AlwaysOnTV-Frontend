@@ -46,6 +46,8 @@ emitter.$on('navbar_update', isHidden => {
 	hideNavbar.value = isHidden;
 });
 
+// TODO: Dividers
+
 const drawer = ref(false);
 const navItems = [
 	{
@@ -64,14 +66,14 @@ const navItems = [
 		icon: 'mdi-playlist-edit',
 	},
 	{
-		title: 'Games',
-		name: 'games',
-		icon: 'mdi-controller',
-	},
-	{
 		title: 'Videos',
 		name: 'videos',
 		icon: 'mdi-video',
+	},
+	{
+		title: 'Games',
+		name: 'games',
+		icon: 'mdi-controller',
 	},
 	{
 		title: 'Settings',

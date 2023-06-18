@@ -385,18 +385,18 @@ const addNewGame = async () => {
 				},
 			})
 			.json();
-	
+
 		await fetchGames();
-	
+
 		createGameDialog.value = false;
 		selectedGame.value = {};
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added game.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -413,17 +413,17 @@ const deleteGame = async (game) => {
 				force: game.videoCount > 0,
 			},
 		}).json();
-	
+
 		await fetchGames();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted game.';
-	
+
 		deleteDialog.value = false;
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -452,7 +452,6 @@ const searchForGameOnTwitch = _.debounce(async () => {
 				})
 				.json();
 
-
 			if (!games.length) {
 				console.error('No games found with that name');
 				return;
@@ -464,7 +463,7 @@ const searchForGameOnTwitch = _.debounce(async () => {
 			);
 		} catch (error) {
 			const message = await error.response.text();
-		
+
 			snackbar.value = true;
 			snackbarText.value = message;
 		}

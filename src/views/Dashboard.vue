@@ -88,7 +88,7 @@
 											md="9"
 											class="d-flex flex-column text-center"
 										>
-											<span class="text-h5 mb-2">{{ currentVideo.title }}</span>
+											<span class="text-h5 mb-2 font-weight-medium">{{ currentVideo.title }}</span>
 											<span class="text-subtitle-1">{{ videoProgressString }}</span>
 											<v-slider
 												v-model="sliderValue"

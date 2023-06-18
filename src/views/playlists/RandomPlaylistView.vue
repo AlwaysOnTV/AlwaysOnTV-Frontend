@@ -16,16 +16,15 @@
 							max-width="250"
 							class="ma-4"
 						/>
-	
+
 						<v-spacer />
 
 						<span class="text-h3 mx-4 text-center text-wrap">
 							Random Playlist
 						</span>
-	
+
 						<v-spacer />
 
-						
 						<v-btn
 							class="ml-2"
 							color="primary"
@@ -39,7 +38,7 @@
 				</v-card-text>
 
 				<v-divider thickness="3" />
-	
+
 				<v-card-text
 					style="position: relative; height:100%;"
 				>
@@ -51,6 +50,7 @@
 						<template #default="{ item }">
 							<v-list-item>
 								{{ playlistData.videoInfo[item.id].title }}
+								<!-- // TODO: Show video length and game -->
 								<template #prepend>
 									<v-img
 										:src="playlistData?.videoInfo[item.id]?.thumbnail_url || placeholderImage"
@@ -277,17 +277,17 @@ const addNewVideoToPlaylist = async () => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get('random-playlist').json();
-	
+
 		addVideoDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video to playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -306,15 +306,15 @@ const removeVideoFromPlaylist = async (videoId) => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get('random-playlist').json();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from random playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
