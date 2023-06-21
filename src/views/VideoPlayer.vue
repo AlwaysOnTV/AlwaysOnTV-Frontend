@@ -54,8 +54,6 @@ onMounted(async () => {
 
 	currentVideoTime.value = await asyncEmit('request_video_time');
 
-	// TODO: Request current time of video from server
-
 	emitter.$emit('navbar_update', hideControls.value);
 
 	plyrShowControls.value = hideControls.value ? 'none' : 'flex';

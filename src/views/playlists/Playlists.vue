@@ -159,8 +159,14 @@
 
 							<v-spacer />
 
-							<v-card-subtitle class="mb-1">
-								<strong>Total Videos:</strong> {{ item.videoCount }}
+							<v-card-subtitle class="mb-2">
+								<p>
+									<strong>Total Videos:</strong> {{ item.videoCount }}
+								</p>
+
+								<p>
+									<strong>Estimated Length:</strong> {{ getPlaylistLengthFormatted(item.playlistLength) }}
+								</p>
 							</v-card-subtitle>
 						</v-card>
 					</v-hover>
@@ -438,9 +444,16 @@ import { socket } from '@/socket.js';
 import SelectGameDialog from '@/composables/SelectGameDialog.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+import { Duration } from 'luxon';
 
 const snackbar = ref(false);
 const snackbarText = ref('');
+
+const getPlaylistLengthFormatted = length => {
+	const progress = Duration.fromObject({ seconds: length });
+
+	return progress.toFormat('hh:mm:ss');
+};
 
 // ---
 // Select Game
@@ -549,8 +562,6 @@ const queuePlaylist = async () => {
 				},
 			})
 			.json();
-
-		socket.emit('queue_history_update');
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully queued playlist.';

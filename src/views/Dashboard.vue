@@ -28,9 +28,9 @@
 										color="blue"
 										variant="outlined"
 										prepend-icon="mdi-plus"
-										@click="openAddVideoDialog"
+										@click="openSelectVideoDialog"
 									>
-										Add Video To Queue
+										Video
 									</v-btn>
 
 									<v-btn
@@ -38,9 +38,19 @@
 										color="blue"
 										variant="outlined"
 										prepend-icon="mdi-plus"
-										@click="openAddPlaylistDialog"
+										@click="openSelectPlaylistDialog"
 									>
-										Add Playlist To Queue
+										Playlist
+									</v-btn>
+
+									<v-btn
+										class="mx-2"
+										color="green"
+										variant="outlined"
+										prepend-icon="mdi-plus"
+										@click="openAddRandomVideosDialog"
+									>
+										Random Videos
 									</v-btn>
 
 									<v-btn
@@ -51,7 +61,7 @@
 										:disabled="isQueueEmpty"
 										@click="deleteDialog = true"
 									>
-										Clear Queue
+										Clear
 									</v-btn>
 								</div>
 
@@ -333,180 +343,6 @@
 		</v-card>
 	</v-dialog>
 
-	<!-- Add playlist to queue -->
-	<v-dialog
-		v-model="addPlaylistDialog"
-		width="800"
-	>
-		<v-card>
-			<v-card-title>
-				<span class="text-h5">Adds a playlist to the queue</span>
-			</v-card-title>
-			<v-card-text>
-				<v-container>
-					<v-row>
-						<v-btn
-							color="green-darken-1"
-							variant="text"
-							prepend-icon="mdi-magnify"
-							@click="openSelectPlaylistDialog"
-						>
-							Select Playlist
-						</v-btn>
-					</v-row>
-
-					<v-row>
-						<v-col
-							cols="12"
-							sm="6"
-							class="pl-0"
-						>
-							<v-img
-								:src="selectedPlaylist.thumbnail_url || placeholderImage"
-								cover
-								:aspect-ratio="16 / 9"
-								width="auto"
-							/>
-						</v-col>
-						<v-col
-							cols="12"
-							sm="6"
-							class="pr-0"
-						>
-							<div class="d-flex flex-column justify-space-around h-100">
-								<div>
-									<v-text-field
-										v-model="selectedPlaylist.title"
-										label="Playlist"
-										readonly
-										variant="solo-filled"
-										hide-details
-									/>
-								</div>
-								<div>
-									<v-text-field
-										v-model="selectedPlaylist.id"
-										label="Playlist ID"
-										readonly
-										variant="solo-filled"
-										hide-details
-									/>
-								</div>
-							</div>
-						</v-col>
-					</v-row>
-				</v-container>
-				<small>Adds a playlist to the queue</small>
-			</v-card-text>
-			<v-card-actions>
-				<v-spacer />
-				<v-btn
-					color="red-darken-1"
-					variant="text"
-					@click="addPlaylistDialog = false"
-				>
-					Close
-				</v-btn>
-				<v-btn
-					color="green-darken-1"
-					variant="text"
-					:disabled="!selectedPlaylist"
-					:loading="isLoading"
-					@click="addNewPlaylistToQueue"
-				>
-					Add
-				</v-btn>
-			</v-card-actions>
-		</v-card>
-	</v-dialog>
-
-	<!-- Add video to queue -->
-	<v-dialog
-		v-model="addVideoDialog"
-		width="800"
-	>
-		<v-card>
-			<v-card-title>
-				<span class="text-h5">Adds a video to the queue</span>
-			</v-card-title>
-			<v-card-text>
-				<v-container>
-					<v-row>
-						<v-btn
-							color="green-darken-1"
-							variant="text"
-							prepend-icon="mdi-magnify"
-							@click="openSelectVideoDialog"
-						>
-							Select Video
-						</v-btn>
-					</v-row>
-
-					<v-row>
-						<v-col
-							cols="12"
-							sm="6"
-							clöass="pl-0"
-						>
-							<v-img
-								:src="selectedVideo.thumbnail_url || placeholderImage"
-								cover
-								:aspect-ratio="16 / 9"
-								width="auto"
-							/>
-						</v-col>
-						<v-col
-							cols="12"
-							sm="6"
-							class="pr-0"
-						>
-							<div class="d-flex flex-column justify-space-around h-100">
-								<div>
-									<v-text-field
-										v-model="selectedVideo.title"
-										label="Video"
-										readonly
-										variant="solo-filled"
-										hide-details
-									/>
-								</div>
-								<div>
-									<v-text-field
-										v-model="selectedVideo.id"
-										label="Video ID"
-										readonly
-										variant="solo-filled"
-										hide-details
-									/>
-								</div>
-							</div>
-						</v-col>
-					</v-row>
-				</v-container>
-				<small>Adds a video to the queue</small>
-			</v-card-text>
-			<v-card-actions>
-				<v-spacer />
-				<v-btn
-					color="red-darken-1"
-					variant="text"
-					@click="addVideoDialog = false"
-				>
-					Close
-				</v-btn>
-				<v-btn
-					color="green-darken-1"
-					variant="text"
-					:disabled="!selectedVideo"
-					:loading="isLoading"
-					@click="addNewVideoToQueue"
-				>
-					Add
-				</v-btn>
-			</v-card-actions>
-		</v-card>
-	</v-dialog>
-
 	<!-- Select Video -->
 	<SelectVideoDialog
 		ref="selectVideoDialog"
@@ -519,6 +355,12 @@
 		@select-playlist="selectPlaylist"
 	/>
 
+	<!-- Add Random Videos -->
+	<AddRandomVideosDialog
+		ref="addRandomVideosDialog"
+		@add-random-videos="addRandomVideos"
+	/>
+
 	<!-- Clear the queue -->
 	<v-dialog
 		v-model="deleteDialog"
@@ -527,7 +369,7 @@
 		<v-card>
 			<v-card-title> Clearing the entire queue </v-card-title>
 			<v-card-text>
-				Do you really want to delete the entire queue?
+				Do you really want to clear the entire queue?
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
@@ -577,6 +419,7 @@ import { socket, asyncEmit } from '@/socket';
 import SelectVideoDialog from '@/composables/SelectVideoDialog.vue';
 import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
 import QueueVideoItem from '@/composables/QueueVideoItem.vue';
+import AddRandomVideosDialog from '@/composables/AddRandomVideosDialog.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
 import { Duration } from 'luxon';
@@ -683,46 +526,63 @@ socket.on('queue_history_update', ({ queue, history }) => {
 
 // ---
 // Select Video
-
-const addVideoDialog = ref(false);
-
-const openAddVideoDialog = () => {
-	addVideoDialog.value = true;
-	openSelectVideoDialog();
-};
-
 const selectVideoDialog = ref(null);
-const selectedVideo = ref(false);
 
 const openSelectVideoDialog = () => {
 	selectVideoDialog.value.open();
 };
 
 const selectVideo = video => {
-	selectedVideo.value = video;
+	addNewVideoToQueue(video);
 };
 
 // ---
 
 // ---
 // Select Playlist
-
-const addPlaylistDialog = ref(false);
-
-const openAddPlaylistDialog = () => {
-	addPlaylistDialog.value = true;
-	openSelectPlaylistDialog();
-};
-
 const selectPlaylistDialog = ref(null);
-const selectedPlaylist = ref(false);
 
 const openSelectPlaylistDialog = () => {
 	selectPlaylistDialog.value.open();
 };
 
 const selectPlaylist = playlist => {
-	selectedPlaylist.value = playlist;
+	// TODO: Open "Do you want to add this playlist" dialog
+	addNewPlaylistToQueue(playlist);
+};
+
+// ---
+
+// ---
+// Random Videos
+
+const addRandomVideosDialog = ref(null);
+
+const openAddRandomVideosDialog = () => {
+	addRandomVideosDialog.value.open();
+};
+
+const addRandomVideos = async amount => {
+	console.log('Adding', amount, 'random videos to the queue.');
+
+	try {
+		await ky
+			.put('queue/random', {
+				json: {
+					amount,
+				},
+			})
+			.json();
+
+		snackbar.value = true;
+		snackbarText.value = `Successfully added ${amount} random videos.`;
+	}
+	catch (error) {
+		const message = await error.response.text();
+
+		snackbar.value = true;
+		snackbarText.value = message;
+	}
 };
 
 // ---
@@ -751,8 +611,6 @@ const editQueuePosition = async () => {
 			})
 			.json();
 
-		socket.emit('queue_history_update');
-
 		editQueuePositionDialog.value = false;
 
 		snackbar.value = true;
@@ -776,8 +634,6 @@ const editQueuePositionStart = async (index) => {
 				},
 			})
 			.json();
-
-		socket.emit('queue_history_update');
 
 		editQueuePositionDialog.value = false;
 
@@ -803,8 +659,6 @@ const editQueuePositionEnd = async (index) => {
 			})
 			.json();
 
-		socket.emit('queue_history_update');
-
 		editQueuePositionDialog.value = false;
 
 		snackbar.value = true;
@@ -823,8 +677,6 @@ const deleteVideoFromQueue = async (index) => {
 		await ky
 			.delete(`queue/${index}`)
 			.json();
-
-		socket.emit('queue_history_update');
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from queue.';
@@ -881,24 +733,15 @@ const isHistoryEmpty = computed(() => {
 	return !getHistoryLength.value;
 });
 
-const addNewVideoToQueue = async () => {
-	const videoData = {
-		id: selectedVideo.value.id,
-		title: selectedVideo.value.title,
-	};
-
+const addNewVideoToQueue = async video => {
 	try {
 		await ky
 			.put('queue/video', {
 				json: {
-					videoId: videoData.id,
+					videoId: video.id,
 				},
 			})
 			.json();
-
-		socket.emit('queue_history_update');
-
-		addVideoDialog.value = false;
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video.';
@@ -916,8 +759,6 @@ const clearQueue = async () => {
 		await ky
 			.delete('queue')
 			.json();
-
-		socket.emit('queue_history_update');
 
 		deleteDialog.value = false;
 
@@ -942,8 +783,6 @@ const addToQueueFromHistory = async (videoId) => {
 			})
 			.json();
 
-		socket.emit('queue_history_update');
-
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video.';
 	}
@@ -955,24 +794,15 @@ const addToQueueFromHistory = async (videoId) => {
 	}
 };
 
-const addNewPlaylistToQueue = async () => {
-	const playlistData = {
-		id: selectedPlaylist.value.id,
-		title: selectedPlaylist.value.title,
-	};
-
+const addNewPlaylistToQueue = async playlist => {
 	try {
 		await ky
 			.put('queue/playlist', {
 				json: {
-					playlistId: playlistData.id,
+					playlistId: playlist.id,
 				},
 			})
 			.json();
-
-		socket.emit('queue_history_update');
-
-		addPlaylistDialog.value = false;
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added playlist to queue.';

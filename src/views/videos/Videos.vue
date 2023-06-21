@@ -671,8 +671,6 @@ const addVideoToPlaylist = async () => {
 			})
 			.json();
 
-		socket.emit('queue_history_update');
-
 		addToPlaylistDialog.value = false;
 
 		snackbar.value = true;
@@ -722,8 +720,6 @@ const queueVideo = async (videoId) => {
 				},
 			})
 			.json();
-
-		socket.emit('queue_history_update');
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully queued video.';
