@@ -99,9 +99,10 @@
 											class="d-flex flex-column text-center"
 										>
 											<span class="text-h5 mb-2 font-weight-medium">{{ currentVideo.title }}</span>
-											<span class="text-subtitle-1">{{ videoProgressString }}</span>
+
 											<v-slider
 												v-model="sliderValue"
+												class="mt-5"
 												:min="0"
 												:max="videoLength"
 												:disabled="videoLoading"
@@ -115,6 +116,8 @@
 													{{ videoThumb }}
 												</template>
 											</v-slider>
+
+											<span class="text-subtitle-1">{{ videoProgressString }}</span>
 
 											<div class="d-flex flex-row">
 												<v-spacer />
