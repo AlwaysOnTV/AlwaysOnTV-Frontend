@@ -566,8 +566,6 @@ const openAddRandomVideosDialog = () => {
 };
 
 const addRandomVideos = async amount => {
-	console.log('Adding', amount, 'random videos to the queue.');
-
 	try {
 		await ky
 			.put('queue/random', {

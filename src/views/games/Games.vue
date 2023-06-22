@@ -165,18 +165,22 @@
 			>
 				<v-virtual-scroll
 					style="position: absolute; left: 0; right: 0; top: 0; bottom: 0;"
-					:items="filteredSearchedGames"
+					:items="checkboxBasedSearchedGames"
 					item-height="150"
 				>
 					<template #default="{ item }">
 						<v-list-item
 							class="py-2"
 							:disabled="isLoading"
-							@click="addNewGame(item)"
+							@click="!item.isAdded && addNewGame(item)"
 						>
 							<v-list-item-title class="text-h5 font-weight-bold">
 								{{ item.name }}
 							</v-list-item-title>
+
+							<v-list-item-subtitle v-if="item.isAdded">
+								Already added
+							</v-list-item-subtitle>
 
 							<template #prepend>
 								<v-img
@@ -194,7 +198,19 @@
 			</v-card-text>
 
 			<v-card-actions>
-				<span>Found {{ filteredSearchedGames.length }} games</span>
+				<div class="d-flex flex-column text-center">
+					<v-checkbox
+						v-model="checkboxShowAdded"
+						label="Show added"
+						hide-details
+					/>
+					<span v-if="filteredSearchedGames.length">
+						Found {{ filteredSearchedGames.length }} games ({{ filteredSearchedGames.filter(g => g.isAdded).length }} already added)
+					</span>
+					<span v-else>
+						No games were found with that name
+					</span>
+				</div>
 				<v-spacer />
 				<v-btn
 					color="red-darken-1"
@@ -270,18 +286,28 @@ const createGameDialog = ref(false);
 const games = ref([]);
 const searchedGames = ref([]);
 const searchErrorMessages = ref('');
+const checkboxShowAdded = ref(false);
 
 const filteredSearchedGames = computed(() => {
 	const filtered = [];
 
 	for (const game of searchedGames.value) {
-		if (games.value.some(otherGame => otherGame.id === findTwitchGameID(game)))
-			continue;
+		let isAdded = false;
 
-		filtered.push(game);
+		if (games.value.some(otherGame => otherGame.id === findTwitchGameID(game)))
+			isAdded = true;
+
+		filtered.push({
+			...game,
+			isAdded,
+		});
 	}
 
 	return filtered;
+});
+
+const checkboxBasedSearchedGames = computed(() => {
+	return filteredSearchedGames.value.filter(game => !game.isAdded || checkboxShowAdded.value);
 });
 
 const findTwitchGameID = igdbGame => {
@@ -447,7 +473,7 @@ const searchForGameOnTwitch = _.debounce(async () => {
 			.json();
 
 		if (!games.length) {
-			searchErrorMessages.value = 'No games were found with that name.';
+			searchErrorMessages.value = 'No games were found with that name';
 			return;
 		}
 
