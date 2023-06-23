@@ -358,6 +358,69 @@
 		@select-playlist="selectPlaylist"
 	/>
 
+	<!-- Add Playlist Confirmation -->
+	<v-dialog
+		v-model="confirmAddPlaylistDialog"
+		width="auto"
+		max-width="800"
+	>
+		<v-card>
+			<v-card-title>Queue playlist</v-card-title>
+
+			<v-card-text class="text-center">
+				<h2>
+					Do you really want to queue this playlist?
+				</h2>
+
+				<p>
+					The estimated length is <strong>{{ selectedPlaylistLength }}</strong>
+				</p>
+			</v-card-text>
+
+			<v-card-text class="text-center">
+				<h2 class="pb-3">
+					{{ selectedPlaylist.title }}
+				</h2>
+
+				<v-row>
+					<v-spacer />
+
+					<v-col cols="6">
+						<v-img
+							:src="selectedPlaylist.thumbnail_url"
+							:lazy-src="placeholderImage"
+							:aspect-ratio="16/9"
+							width="300"
+							cover
+							class="mr-5"
+						/>
+					</v-col>
+
+					<v-spacer />
+				</v-row>
+			</v-card-text>
+
+			<v-card-actions>
+				<v-spacer />
+				<v-btn
+					color="red-darken-1"
+					variant="text"
+					@click="confirmAddPlaylistDialog = false"
+				>
+					Cancel
+				</v-btn>
+				<v-btn
+					color="green-darken-1"
+					variant="text"
+					:loading="isLoading"
+					@click="confirmPlaylist"
+				>
+					Add Playlist
+				</v-btn>
+			</v-card-actions>
+		</v-card>
+	</v-dialog>
+
 	<!-- Add Random Videos -->
 	<AddRandomVideosDialog
 		ref="addRandomVideosDialog"
@@ -543,16 +606,30 @@ const selectVideo = video => {
 
 // ---
 // Select Playlist
+const selectedPlaylist = ref(false);
 const selectPlaylistDialog = ref(null);
+const confirmAddPlaylistDialog = ref(false);
 
 const openSelectPlaylistDialog = () => {
 	selectPlaylistDialog.value.open();
 };
 
 const selectPlaylist = playlist => {
-	// TODO: Open "Do you want to add this playlist" dialog
-	addNewPlaylistToQueue(playlist);
+	selectedPlaylist.value = playlist;
+	confirmAddPlaylistDialog.value = true;
 };
+
+const confirmPlaylist = () => {
+	addNewPlaylistToQueue();
+};
+
+const selectedPlaylistLength = computed(() => {
+	console.log(selectedPlaylist.value);
+
+	const progress = Duration.fromObject({ seconds: selectedPlaylist.value?.playlistLength || 0 });
+
+	return progress.toFormat('hh:mm:ss');
+});
 
 // ---
 
@@ -795,15 +872,18 @@ const addToQueueFromHistory = async (videoId) => {
 	}
 };
 
-const addNewPlaylistToQueue = async playlist => {
+const addNewPlaylistToQueue = async () => {
 	try {
 		await ky
 			.put('queue/playlist', {
 				json: {
-					playlistId: playlist.id,
+					playlistId: selectedPlaylist.value.id,
 				},
 			})
 			.json();
+
+		selectedPlaylist.value = false;
+		confirmAddPlaylistDialog.value = false;
 
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added playlist to queue.';

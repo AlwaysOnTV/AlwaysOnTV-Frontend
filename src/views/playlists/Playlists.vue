@@ -439,7 +439,6 @@ import _ from 'lodash';
 import ky, { isLoading } from '@/ky';
 import { onMounted, ref, computed, watch } from 'vue';
 import { useDisplay } from 'vuetify';
-import { socket } from '@/socket.js';
 
 import SelectGameDialog from '@/composables/SelectGameDialog.vue';
 

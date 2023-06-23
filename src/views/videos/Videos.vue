@@ -601,7 +601,6 @@ import SelectPlaylistDialog from '@/composables/SelectPlaylistDialog.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
 import { Duration } from 'luxon';
-import { socket } from '@/socket';
 
 const formatVideoLength = length => {
 	const progress = Duration.fromObject({ seconds: length });
