@@ -624,8 +624,6 @@ const confirmPlaylist = () => {
 };
 
 const selectedPlaylistLength = computed(() => {
-	console.log(selectedPlaylist.value);
-
 	const progress = Duration.fromObject({ seconds: selectedPlaylist.value?.playlistLength || 0 });
 
 	return progress.toFormat('hh:mm:ss');
