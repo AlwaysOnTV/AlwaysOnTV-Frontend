@@ -9,7 +9,7 @@
 			<v-main>
 				<router-view />
 			</v-main>
-			<Footer v-if="route.name !== 'home'" />
+			<Footer v-if="route.name !== 'video-player'" />
 		</template>
 	</v-app>
 </template>

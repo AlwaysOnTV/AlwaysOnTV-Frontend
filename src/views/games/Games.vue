@@ -141,63 +141,76 @@
 			<v-card-title>
 				<span class="text-h5">Add a new game</span>
 			</v-card-title>
+
 			<v-card-text>
-				<v-container>
-					<v-row>
-						<v-text-field
-							v-model="searchInput"
-							label="Search"
-							append-inner-icon="mdi-magnify"
-							placeholder="Just Chatting"
-							required
-							variant="solo-filled"
-							hide-details
-						/>
-					</v-row>
-					<v-row>
-						<v-col
-							cols="12"
-							sm="4"
-							class="pl-0"
-						>
-							<v-img
-								:src="selectedGame.box_art_url || placeholderImage"
-								cover
-								:aspect-ratio="5 / 7"
-								width="auto"
-							/>
-						</v-col>
-						<v-col
-							cols="12"
-							sm="8"
-							class="pr-0"
-						>
-							<div class="d-flex flex-column justify-space-around h-100">
-								<div>
-									<v-text-field
-										v-model="selectedGame.name"
-										label="Game"
-										readonly
-										variant="solo-filled"
-										hide-details
-									/>
-								</div>
-								<div>
-									<v-text-field
-										v-model="selectedGame.id"
-										label="Twitch ID"
-										readonly
-										variant="solo-filled"
-										hide-details
-									/>
-								</div>
-							</div>
-						</v-col>
-					</v-row>
-				</v-container>
-				<small>Creates a new game</small>
+				<v-row>
+					<v-text-field
+						v-model="searchInput"
+						:disabled="isLoading"
+						:loading="isLoading"
+						:error-messages="searchErrorMessages"
+						label="Search"
+						append-inner-icon="mdi-magnify"
+						placeholder="Just Chatting"
+						required
+						variant="solo-filled"
+						hide-details="auto"
+					/>
+				</v-row>
 			</v-card-text>
+
+			<v-card-text
+				class="mt-4"
+				style="position: relative; height: 800px;"
+			>
+				<v-virtual-scroll
+					style="position: absolute; left: 0; right: 0; top: 0; bottom: 0;"
+					:items="checkboxBasedSearchedGames"
+					item-height="150"
+				>
+					<template #default="{ item }">
+						<v-list-item
+							class="py-2"
+							:disabled="isLoading"
+							@click="!item.isAdded && addNewGame(item)"
+						>
+							<v-list-item-title class="text-h5 font-weight-bold">
+								{{ item.name }}
+							</v-list-item-title>
+
+							<v-list-item-subtitle v-if="item.isAdded">
+								Already added
+							</v-list-item-subtitle>
+
+							<template #prepend>
+								<v-img
+									:src="bigThumbnail(item.cover.url)"
+									:lazy-src="placeholderImage"
+									cover
+									:aspect-ratio="3 / 4"
+									width="100"
+									class="mr-4"
+								/>
+							</template>
+						</v-list-item>
+					</template>
+				</v-virtual-scroll>
+			</v-card-text>
+
 			<v-card-actions>
+				<div class="d-flex flex-column text-center">
+					<v-checkbox
+						v-model="checkboxShowAdded"
+						label="Show added"
+						hide-details
+					/>
+					<span v-if="filteredSearchedGames.length">
+						Found {{ filteredSearchedGames.length }} games ({{ filteredSearchedGames.filter(g => g.isAdded).length }} already added)
+					</span>
+					<span v-else>
+						No games were found with that name
+					</span>
+				</div>
 				<v-spacer />
 				<v-btn
 					color="red-darken-1"
@@ -205,15 +218,6 @@
 					@click="createGameDialog = false"
 				>
 					Close
-				</v-btn>
-				<v-btn
-					color="green-darken-1"
-					variant="text"
-					:disabled="!canAddGame"
-					:loading="isLoading"
-					@click="addNewGame"
-				>
-					Add
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -280,7 +284,35 @@ import placeholderImage from '@/assets/placeholder-500x700.jpg';
 
 const createGameDialog = ref(false);
 const games = ref([]);
-const selectedGame = ref({});
+const searchedGames = ref([]);
+const searchErrorMessages = ref('');
+const checkboxShowAdded = ref(false);
+
+const filteredSearchedGames = computed(() => {
+	const filtered = [];
+
+	for (const game of searchedGames.value) {
+		let isAdded = false;
+
+		if (games.value.some(otherGame => otherGame.id === findTwitchGameID(game)))
+			isAdded = true;
+
+		filtered.push({
+			...game,
+			isAdded,
+		});
+	}
+
+	return filtered;
+});
+
+const checkboxBasedSearchedGames = computed(() => {
+	return filteredSearchedGames.value.filter(game => !game.isAdded || checkboxShowAdded.value);
+});
+
+const findTwitchGameID = igdbGame => {
+	return igdbGame.external_games?.find(external => external.category === 14)?.uid;
+};
 
 const deleteDialog = ref(false);
 const deletingGame = ref(false);
@@ -344,30 +376,17 @@ const fetchGames = async () => {
 onMounted(fetchGames);
 
 const openCreateGameDialog = () => {
-	selectedGame.value = {};
+	searchedGames.value = [];
+	searchInput.value = '';
 	createGameDialog.value = true;
 };
 
-const canAddGame = computed(() => {
-	if (!selectedGame.value) return false;
-
-	const isDuplicate = games.value.some(
-		(game) => game.title === selectedGame.value.name || game.id === selectedGame.value.id,
-	);
-
-	return !isDuplicate;
-});
-
-const addNewGame = async () => {
-	const gameData = {
-		name: selectedGame.value.name,
-		twitch_id: selectedGame.value.id,
-		thumbnail_url: selectedGame.value.box_art_url,
-	};
+const addNewGame = async (igdbGame) => {
+	const twitchGameID = findTwitchGameID(igdbGame);
 
 	// Check if the game already exists in the list
 	const isDuplicate = games.value.some(
-		(game) => game.title === gameData.name && game.id === gameData.twitch_id,
+		(game) => game.title === igdbGame.name || game.id === twitchGameID,
 	);
 
 	if (isDuplicate) {
@@ -379,24 +398,21 @@ const addNewGame = async () => {
 		await ky
 			.put('games', {
 				json: {
-					gameId: gameData.twitch_id,
-					title: gameData.name,
-					thumbnail_url: gameData.thumbnail_url,
+					igdbGameId: `${igdbGame.id}`,
 				},
 			})
 			.json();
-	
+
 		await fetchGames();
-	
+
 		createGameDialog.value = false;
-		selectedGame.value = {};
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added game.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -413,17 +429,17 @@ const deleteGame = async (game) => {
 				force: game.videoCount > 0,
 			},
 		}).json();
-	
+
 		await fetchGames();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted game.';
-	
+
 		deleteDialog.value = false;
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -437,37 +453,36 @@ watch(searchInput, (newValue) => {
 	searchForGameOnTwitch();
 });
 
+const bigThumbnail = url => {
+	return url.replace('t_thumb', 't_cover_big');
+};
+
 const searchForGameOnTwitch = _.debounce(async () => {
-	if (!searchInput.value) {
-		selectedGame.value = {};
-	} else {
-		const searchTerm = searchInput.value.toLocaleLowerCase();
+	searchErrorMessages.value = '';
 
-		try {
-			const games = await ky
-				.post('twitch/get-game', {
-					json: {
-						name: searchTerm,
-					},
-				})
-				.json();
+	const searchTerm = searchInput.value.toLocaleLowerCase();
 
+	try {
 
-			if (!games.length) {
-				console.error('No games found with that name');
-				return;
-			}
-			selectedGame.value = games[0];
-			selectedGame.value.box_art_url = selectedGame.value.box_art_url.replace(
-				'{width}x{height}',
-				'500x700',
-			);
-		} catch (error) {
-			const message = await error.response.text();
-		
-			snackbar.value = true;
-			snackbarText.value = message;
+		const games = await ky
+			.post('twitch/search-games', {
+				json: {
+					name: searchTerm,
+				},
+			})
+			.json();
+
+		if (!games.length) {
+			searchErrorMessages.value = 'No games were found with that name';
+			return;
 		}
+
+		searchedGames.value = games;
+	} catch (error) {
+		const message = await error.response.text();
+
+		snackbar.value = true;
+		snackbarText.value = message;
 	}
 }, 500);
 </script>

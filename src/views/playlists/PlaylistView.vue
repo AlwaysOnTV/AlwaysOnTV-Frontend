@@ -16,11 +16,17 @@
 						/>
 
 						<v-spacer />
-						
-						<span class="text-h3 mx-4 text-center text-wrap">
-							{{ playlistData.title }}
-						</span>
-						
+
+						<div class="text-center text-wrap">
+							<p class="text-h3 mx-4">
+								{{ playlistData.title }}
+							</p>
+
+							<p class="mt-2 text-subtitle-1">
+								<strong>Estimated length:</strong> {{ queueLength }}
+							</p>
+						</div>
+
 						<v-spacer />
 
 						<div class="d-flex flex-column mr-4">
@@ -36,7 +42,7 @@
 							</v-btn>
 
 							<v-spacer />
-	
+
 							<v-btn
 								block
 								class="my-2"
@@ -62,12 +68,18 @@
 						item-height="100"
 					>
 						<template #default="{ item }">
-							<v-list-item
-								class="py-4"
-							>
+							<v-list-item>
 								<v-list-item-title>
 									{{ playlistData.videoInfo[item.id].title }}
 								</v-list-item-title>
+
+								<v-list-item-subtitle>
+									<strong>Game:</strong> {{ getGameByVideoID(item.id)?.title }}
+								</v-list-item-subtitle>
+
+								<v-list-item-subtitle>
+									<strong>Length:</strong> {{ getVideoLength(item.id) }}
+								</v-list-item-subtitle>
 
 								<template #prepend>
 									<div class="mx-5 text-center">
@@ -101,7 +113,7 @@
 										:aspect-ratio="16/9"
 										width="125"
 										cover
-										class="mr-5"
+										class="mr-5 my-2"
 									/>
 
 									<v-btn
@@ -341,6 +353,41 @@ import { useRoute, useRouter } from 'vue-router';
 import SelectVideoDialog from '@/composables/SelectVideoDialog.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+import { Duration } from 'luxon';
+
+const queueLength = computed(() => {
+	let progress = Duration.fromMillis(0);
+
+	if (!playlistData.value?.videos?.length) {
+		return '0 seconds';
+	}
+
+	for (const video of playlistData.value.videos) {
+		progress = progress.plus({ seconds: getVideoLength(video.id, false) });
+	}
+
+	if (progress.as('days') >= 1) {
+		const progressWithoutDays = progress.minus({ days: Math.floor(progress.as('days')) });
+		return `${progress.toFormat('d \'days\'')}, ${progressWithoutDays.toFormat('h \'hours\', m \'minutes\', s \'seconds\'')}`;
+	}
+	else {
+		return progress.toFormat('h \'hours\', m \'minutes\', s \'seconds\'');
+	}
+});
+
+const getGameByVideoID = videoId => {
+	const videoInfo = playlistData.value.videoInfo[videoId];
+
+	return playlistData.value.gameInfo[videoInfo.gameId];
+};
+
+const getVideoLength = (videoId, asString = true) => {
+	const videoInfo = playlistData.value.videoInfo[videoId];
+
+	const progress = Duration.fromObject({ seconds: videoInfo.length });
+
+	return asString ? progress.toFormat('hh:mm:ss') : videoInfo.length;
+};
 
 // ---
 // Select Video
@@ -403,17 +450,17 @@ const addNewVideoToPlaylist = async () => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get(`playlists/id/${id}`).json();
-	
+
 		addVideoDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added video to playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -430,14 +477,14 @@ const deletePlaylist = async () => {
 				force: playlistData.value.videos.length > 0,
 			},
 		}).json();
-	
+
 		router.push({
 			name: 'playlists',
 		});
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -452,15 +499,15 @@ const removeVideoFromPlaylist = async (index) => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get(`playlists/id/${id}`).json();
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully deleted video from playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -476,17 +523,17 @@ const editPos = async () => {
 				},
 			})
 			.json();
-	
+
 		playlistData.value = await ky.get(`playlists/id/${id}`).json();
-	
+
 		editPositionDialog.value = false;
-	
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully edited playlist';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}

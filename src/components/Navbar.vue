@@ -15,14 +15,27 @@
 		v-model="drawer"
 		location="left"
 	>
-		<v-list>
-			<v-list-item
+		<v-list class="pt-0">
+			<template
 				v-for="item in navItems"
 				:key="item.title"
-				:to="{ name: item.name }"
 			>
-				{{ item.title }}
-			</v-list-item>
+				<v-divider
+					v-if="item.divider"
+					thickness="2"
+				/>
+
+				<v-list-item
+					:to="{ name: item.name }"
+					color="primary"
+				>
+					<template #prepend>
+						<v-icon :icon="item.icon" />
+					</template>
+
+					{{ item.title }}
+				</v-list-item>
+			</template>
 		</v-list>
 	</v-navigation-drawer>
 </template>
@@ -44,28 +57,37 @@ emitter.$on('navbar_update', isHidden => {
 const drawer = ref(false);
 const navItems = [
 	{
-		title: 'Home',
-		name: 'home',
-	},
-	{
 		title: 'Dashboard',
 		name: 'dashboard',
+		icon: 'mdi-home',
+	},
+	{
+		title: 'Video Player',
+		name: 'video-player',
+		icon: 'mdi-television',
+		divider: true,
 	},
 	{
 		title: 'Playlists',
 		name: 'playlists',
-	},
-	{
-		title: 'Games',
-		name: 'games',
+		icon: 'mdi-playlist-edit',
+		divider: true,
 	},
 	{
 		title: 'Videos',
 		name: 'videos',
+		icon: 'mdi-video',
+	},
+	{
+		title: 'Games',
+		name: 'games',
+		icon: 'mdi-controller',
 	},
 	{
 		title: 'Settings',
 		name: 'settings',
+		icon: 'mdi-cog',
+		divider: true,
 	},
 ];
 

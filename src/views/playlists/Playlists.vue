@@ -13,7 +13,7 @@
 			>
 				Create playlist
 			</v-btn>
-	
+
 			<v-btn
 				color="red"
 				variant="outlined"
@@ -122,7 +122,7 @@
 														</v-tooltip>
 														<v-icon />
 													</v-btn>
-	
+
 													<v-btn
 														class="mx-2"
 														icon="mdi-file-edit"
@@ -159,8 +159,14 @@
 
 							<v-spacer />
 
-							<v-card-subtitle class="mb-1">
-								<strong>Total Videos:</strong> {{ item.videoCount }}
+							<v-card-subtitle class="mb-2">
+								<p>
+									<strong>Total Videos:</strong> {{ item.videoCount }}
+								</p>
+
+								<p>
+									<strong>Estimated Length:</strong> {{ getPlaylistLengthFormatted(item.playlistLength) }}
+								</p>
 							</v-card-subtitle>
 						</v-card>
 					</v-hover>
@@ -437,9 +443,16 @@ import { useDisplay } from 'vuetify';
 import SelectGameDialog from '@/composables/SelectGameDialog.vue';
 
 import placeholderImage from '@/assets/placeholder-500x700.jpg';
+import { Duration } from 'luxon';
 
 const snackbar = ref(false);
 const snackbarText = ref('');
+
+const getPlaylistLengthFormatted = length => {
+	const progress = Duration.fromObject({ seconds: length });
+
+	return progress.toFormat('hh:mm:ss');
+};
 
 // ---
 // Select Game
@@ -484,7 +497,7 @@ const searchForYTplaylists = _.debounce(async () => {
 		selectedYTplaylist.value = false;
 	} else {
 		const searchTerm = searchInput.value;
-		
+
 		try {
 			const data = await ky
 				.post('youtube/get-playlist', {
@@ -493,17 +506,17 @@ const searchForYTplaylists = _.debounce(async () => {
 					},
 				})
 				.json();
-	
+
 			if (!data) {
 				console.error('No playlist found with that name');
 				return;
 			}
-	
+
 			selectedYTplaylist.value = data;
 		}
 		catch (error) {
 			const message = await error.response.text();
-		
+
 			snackbar.value = true;
 			snackbarText.value = message;
 		}
@@ -548,13 +561,13 @@ const queuePlaylist = async () => {
 				},
 			})
 			.json();
-			
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully queued playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-			
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -607,12 +620,12 @@ watch(chunkedPlaylists, (newValue) => {
 
 const fetchPlaylists = async () => {
 	playlists.value = await ky.get('playlists').json();
-	
+
 	const randomPlaylist = await ky.get('random-playlist').json();
-	
+
 	randomPlaylist.title = 'Random Playlist';
 	randomPlaylist.randomPlaylist = true;
-	
+
 	playlists.value.unshift(randomPlaylist);
 };
 
@@ -631,18 +644,18 @@ const createPlaylist = async () => {
 				},
 			})
 			.json();
-	
+
 		await fetchPlaylists();
 
 		createPlaylistDialog.value = false;
 		newPlaylistName.value = '';
-		
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully added playlist.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
@@ -670,7 +683,7 @@ const importPlaylist = async () => {
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}

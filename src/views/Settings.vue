@@ -13,35 +13,49 @@
 				Setup
 			</v-card-title>
 			<v-card-text class="py-0">
-				<v-card variant="tonal">
+				<v-card variant="flat">
 					<v-card-title>
 						Generic Settings
 					</v-card-title>
 					<v-card-text>
 						<v-checkbox
-							v-model="selected"
+							v-model="useRandomPlaylist"
 							hide-details
 							label="Use random video playlist"
+						/>
+						<v-select
+							v-model="selectedVideoQuality"
+							:items="videoQualityOptions"
+							item-title="name"
+							item-value="quality"
+							persistent-hint
+							hint="Will be applied to the next video"
+							label="Max. Video Quality"
 						/>
 					</v-card-text>
 				</v-card>
 
 				<v-divider
 					thickness="3"
-					class="my-4"
 				/>
 
-				<v-card
-					variant="tonal"
-					class="pt-4"
-				>
+				<v-card variant="flat">
 					<v-card-title>
 						Twitch Connection
 					</v-card-title>
-					<v-card-subtitle> Channel: {{ channelNameAndLogin }} </v-card-subtitle>
+					<v-card-subtitle>
+						Channel: {{ channelNameAndLogin }}
+
+						<v-checkbox
+							v-model="twitchEnabled"
+							hide-details
+							label="Enabled"
+						/>
+					</v-card-subtitle>
 					<v-card-text>
 						<v-text-field
 							v-model="streamingTitle"
+							:disabled="!twitchEnabled"
 							color="dark"
 							label="Streaming Title"
 							variant="solo-filled"
@@ -51,6 +65,7 @@
 
 						<v-text-field
 							v-model="clientID"
+							:disabled="!twitchEnabled"
 							class="my-2"
 							:append-icon="showClientID ? 'mdi-eye' : 'mdi-eye-off'"
 							:type="showClientID ? 'text' : 'password'"
@@ -63,6 +78,7 @@
 						</v-text-field>
 						<v-text-field
 							v-model="clientSecret"
+							:disabled="!twitchEnabled"
 							class="my-2"
 							:append-icon="showClientSecret ? 'mdi-eye' : 'mdi-eye-off'"
 							:type="showClientSecret ? 'text' : 'password'"
@@ -79,7 +95,7 @@
 							variant="outlined"
 							prepend-icon="mdi-twitch"
 							:loading="isAuthenticating"
-							:disabled="!canAuthenticate"
+							:disabled="!canAuthenticate || !twitchEnabled"
 							class="my-2"
 							@click="openAuth"
 						>
@@ -125,14 +141,26 @@
 </template>
 
 <script setup>
-import ky, { isLoading } from '@/ky';
+import ky, { isLoading, API_URL } from '@/ky';
 import { onMounted, ref, computed } from 'vue';
 
 const settingsData = ref({});
 const showClientID = ref(false);
 const showClientSecret = ref(false);
 const isAuthenticating = ref(false);
-const selected = ref(false);
+const useRandomPlaylist = ref(false);
+
+const selectedVideoQuality = ref(null);
+const videoQualityOptions = [
+	{ quality: 360, name: '360p' },
+	{ quality: 480, name: '480p' },
+	{ quality: 720, name: '720p' },
+	{ quality: 1080, name: '1080p' },
+	{ quality: 1440, name: '1440p' },
+	{ quality: 2160, name: '2160p' },
+];
+
+const twitchEnabled = ref(false);
 
 const streamingTitle = ref('');
 const clientID = ref('');
@@ -152,7 +180,10 @@ const canAuthenticate = computed(() => {
 });
 
 const canSave = computed(() => {
-	if (streamingTitle.value !== settingsData.value?.title_replacement)
+	if (streamingTitle.value !== settingsData.value?.twitch?.title_replacement)
+		return true;
+
+	if (twitchEnabled.value !== settingsData.value?.twitch?.enabled)
 		return true;
 
 	if (clientID.value !== settingsData.value?.twitch?.client_id)
@@ -161,7 +192,11 @@ const canSave = computed(() => {
 	if (clientSecret.value !== settingsData.value?.twitch?.client_secret)
 		return true;
 
-	if (selected.value !== settingsData.value?.use_random_playlist) return true;
+	if (useRandomPlaylist.value !== settingsData.value?.use_random_playlist)
+		return true;
+
+	if (selectedVideoQuality.value !== settingsData.value?.max_video_quality)
+		return true;
 
 	return false;
 });
@@ -177,10 +212,12 @@ const channelNameAndLogin = computed(() => {
 const getSettings = async () => {
 	settingsData.value = await ky.get('settings').json();
 
-	streamingTitle.value = settingsData.value.title_replacement;
+	streamingTitle.value = settingsData.value.twitch.title_replacement;
+	twitchEnabled.value = settingsData.value.twitch.enabled;
 	clientID.value = settingsData.value.twitch.client_id;
 	clientSecret.value = settingsData.value.twitch.client_secret;
-	selected.value = settingsData.value.use_random_playlist;
+	useRandomPlaylist.value = settingsData.value.use_random_playlist;
+	selectedVideoQuality.value = videoQualityOptions.find(q => q.quality === settingsData.value.max_video_quality)?.quality;
 };
 
 onMounted(getSettings);
@@ -189,7 +226,7 @@ const openAuth = async () => {
 	isAuthenticating.value = true;
 
 	const authWindow = window.open(
-		'http://localhost:8085/auth/connect/twitch',
+		`${API_URL}auth/connect/twitch`,
 		'authWindow',
 	);
 
@@ -227,25 +264,28 @@ const openAuth = async () => {
 
 const saveSettings = async () => {
 	try {
+
 		await ky
 			.post('settings', {
 				json: {
 					title_replacement: streamingTitle.value,
+					twitch_enabled: twitchEnabled.value,
 					client_id: clientID.value,
 					client_secret: clientSecret.value,
-					use_random_playlist: selected.value,
+					use_random_playlist: useRandomPlaylist.value,
+					max_video_quality: selectedVideoQuality.value,
 				},
 			})
 			.json();
-		
+
 		await getSettings();
-		
+
 		snackbar.value = true;
 		snackbarText.value = 'Successfully updated settings.';
 	}
 	catch (error) {
 		const message = await error.response.text();
-		
+
 		snackbar.value = true;
 		snackbarText.value = message;
 	}
