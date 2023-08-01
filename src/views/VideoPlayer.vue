@@ -52,7 +52,8 @@ onMounted(async () => {
 	// --- Load localStorage value for controls
 	hideControls.value = localStorage.navbar_hidden && JSON.parse(localStorage.navbar_hidden);
 
-	currentVideoTime.value = await asyncEmit('request_video_time');
+	const { progress } = await asyncEmit('request_video_time');
+	currentVideoTime.value = progress;
 
 	emitter.$emit('navbar_update', hideControls.value);
 
@@ -114,6 +115,22 @@ socket.on('refresh_video', () => {
 	fetchVideo();
 });
 
+// Freeze check
+let freezeCounter = 0;
+setInterval(async () => {
+	// TODO: Manual pause check
+
+	// 60 seconds reached
+	if (freezeCounter++ >= 60) {
+		freezeCounter = 0;
+
+		await fetchVideo();
+
+		const { progress } = await asyncEmit('request_video_time');
+		currentVideoTime.value = progress;
+	}
+}, 1000);
+
 const createDashPlayer = () => {
 	const videoPlayer = document.getElementById('videoPlayer');
 
@@ -124,7 +141,15 @@ const createDashPlayer = () => {
 	});
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_TIME_UPDATED'], (e) => {
-		socket.emit('playback_update', { timeToEnd: e.timeToEnd, time: e.time, isPlaying: plyrPlayer.value.playing });
+		socket.emit('playback_update', {
+			time: e.time,
+			timeToEnd: e.timeToEnd,
+			length: Math.round(e.time) + Math.round(e.timeToEnd),
+			isPlaying: plyrPlayer.value.playing,
+		});
+
+		// Reset freeze counter
+		freezeCounter = 0;
 	});
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_PLAYING'], () => {
@@ -133,6 +158,14 @@ const createDashPlayer = () => {
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_PAUSED'], () => {
 		socket.emit('update_playing_state', false);
+	});
+
+	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_ERROR'], (e) => {
+		console.error('PLAYBACK_ERROR', e);
+	});
+
+	dashjsPlayer.value.on(MediaPlayer.events['ERROR'], (e) => {
+		console.error('GENERIC_ERROR', e);
 	});
 
 	dashjsPlayer.value.on('streamInitialized', () => {

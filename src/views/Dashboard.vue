@@ -562,7 +562,7 @@ socket.on('update_dashboard', msg => {
 	}
 
 	videoProgress.value = Math.round(msg.time);
-	videoLength.value = Math.round(msg.time) + Math.round(msg.timeToEnd);
+	videoLength.value = msg.length;
 
 	videoPlaying.value = msg.isPlaying;
 
@@ -786,8 +786,10 @@ onMounted(async () => {
 	queueData.value = await ky.get('queue').json();
 	historyData.value = await ky.get('history').json();
 
-	videoLength.value = queueData.value.current_video.length || 0;
-	videoProgress.value = await asyncEmit('request_video_time');
+	const { progress, length } = await asyncEmit('request_video_time');
+	videoProgress.value = progress || 0;
+	videoLength.value = queueData.value.current_video.length || length || 0;
+
 	sliderValue.value = videoProgress.value;
 
 	videoLoading.value = false;
