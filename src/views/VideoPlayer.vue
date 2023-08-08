@@ -10,6 +10,7 @@
 
 <script setup>
 import Plyr from 'plyr';
+import ky from 'ky';
 import { queue, getMPDForVideo } from '@/ky';
 import emitter from '@/event-bus';
 import { onMounted, ref } from 'vue';
@@ -88,9 +89,9 @@ const fetchVideo = async (nextVideo = false) => {
 		playVideo();
 	}
 	catch (error) {
-		const message = await error.response.text();
+		const message = await error?.response?.text();
 
-		console.error('Error fetching video:', message);
+		console.error('Error fetching video:', message || error);
 	}
 };
 
@@ -117,19 +118,26 @@ socket.on('refresh_video', () => {
 
 // Freeze check
 let freezeCounter = 0;
+let retryAttempts = 0;
 setInterval(async () => {
 	// TODO: Manual pause check
 
 	// 60 seconds reached
-	if (freezeCounter++ >= 60) {
-		freezeCounter = 0;
+	if (++freezeCounter >= 20) {
+		if (++retryAttempts >= 3) {
+			await fetchVideo(true);
 
-		await fetchVideo();
+			freezeCounter = 0;
+			retryAttempts = 0;
+		}
+		else {
+			await fetchVideo();
+		}
 
 		const { progress } = await asyncEmit('request_video_time');
 		currentVideoTime.value = progress;
 	}
-}, 1000);
+}, 1000 * 3);
 
 const createDashPlayer = () => {
 	const videoPlayer = document.getElementById('videoPlayer');
@@ -138,6 +146,8 @@ const createDashPlayer = () => {
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_ENDED'], () => {
 		fetchVideo(true);
+
+		retryAttempts = 0;
 	});
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_TIME_UPDATED'], (e) => {
@@ -161,11 +171,13 @@ const createDashPlayer = () => {
 	});
 
 	dashjsPlayer.value.on(MediaPlayer.events['PLAYBACK_ERROR'], (e) => {
-		console.error('PLAYBACK_ERROR', e);
+		console.error('PLAYBACK_ERROR');
+		console.error(JSON.stringify(e));
 	});
 
 	dashjsPlayer.value.on(MediaPlayer.events['ERROR'], (e) => {
-		console.error('GENERIC_ERROR', e);
+		console.error('GENERIC_ERROR');
+		console.error(JSON.stringify(e));
 	});
 
 	dashjsPlayer.value.on('streamInitialized', () => {
@@ -208,16 +220,21 @@ const playVideo = async () => {
 	try {
 		const player = document.getElementById('videoPlayer');
 
-		if (dashjsPlayer.value) {
-			dashjsPlayer.value.destroy();
-			dashjsPlayer.value = false;
+		// Fetch it once, see if we error
+		await ky.get(getMPDForVideo(currentVideo.value));
+
+		if (!dashjsPlayer.value) {
+			createDashPlayer();
 		}
-		createDashPlayer();
+
 		dashjsPlayer.value.initialize(player, getMPDForVideo(currentVideo.value), true);
 	} catch (error) {
-		const message = await error.response.text();
+		const response = await error?.response?.json();
+		console.error('Error trying to play video:', response || error);
 
-		console.error('Error trying to play video:', message);
+		if (response?.message === 'NO_VIDEO_OR_AUDIO') {
+			fetchVideo(true);
+		}
 	}
 };
 </script>
