@@ -15,7 +15,7 @@
 		</v-list-item-subtitle>
 
 		<template #prepend>
-			<span class="mx-5 text-center">
+			<span class="mr-5 text-center">
 				{{ index + 1 }}
 			</span>
 

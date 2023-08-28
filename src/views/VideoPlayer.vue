@@ -123,14 +123,16 @@ setInterval(async () => {
 	// TODO: Manual pause check
 
 	// 60 seconds reached
-	if (++freezeCounter >= 20) {
-		if (++retryAttempts >= 3) {
+	if (++freezeCounter > 20) {
+		if (++retryAttempts > 3) {
+			console.error('Video frozen even after 3 retries, skipping...');
 			await fetchVideo(true);
 
 			freezeCounter = 0;
 			retryAttempts = 0;
 		}
 		else {
+			console.error(`Video frozen for more than 60 seconds, reloading... (${retryAttempts}/3)`);
 			await fetchVideo();
 		}
 
