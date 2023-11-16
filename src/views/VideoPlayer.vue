@@ -62,11 +62,14 @@ onMounted(async () => {
 	bodyShowScrollbar.value = hideControls.value ? 'none' : 'auto';
 
 	fetchVideo();
+	startFreezeCheck();
 });
 
 onUnmounted(() => {
 	if (plyrPlayer.value) plyrPlayer.value?.destroy();
 	if (dashjsPlayer.value) dashjsPlayer.value?.reset();
+
+	if (freezeCheckInterval) clearInterval(freezeCheckInterval);
 });
 
 const fetchVideo = async (nextVideo = false) => {
@@ -117,29 +120,34 @@ socket.on('refresh_video', () => {
 });
 
 // Freeze check
+let freezeCheckInterval = false;
 let freezeCounter = 0;
 let retryAttempts = 0;
-setInterval(async () => {
-	// TODO: Manual pause check
+const startFreezeCheck = () => {
+	if (freezeCheckInterval) clearInterval(freezeCheckInterval);
 
-	// 60 seconds reached
-	if (++freezeCounter > 20) {
-		if (++retryAttempts > 3) {
-			console.error('Video frozen even after 3 retries, skipping...');
-			await fetchVideo(true);
+	freezeCheckInterval = setInterval(async () => {
+		// TODO: Manual pause check
 
-			freezeCounter = 0;
-			retryAttempts = 0;
+		// 60 seconds reached
+		if (++freezeCounter > 20) {
+			if (++retryAttempts > 3) {
+				console.error('Video frozen even after 3 retries, skipping...');
+				await fetchVideo(true);
+
+				freezeCounter = 0;
+				retryAttempts = 0;
+			}
+			else {
+				console.error(`Video frozen for more than 60 seconds, reloading... (${retryAttempts}/3)`);
+				await fetchVideo();
+			}
+
+			const { progress } = await asyncEmit('request_video_time');
+			currentVideoTime.value = progress;
 		}
-		else {
-			console.error(`Video frozen for more than 60 seconds, reloading... (${retryAttempts}/3)`);
-			await fetchVideo();
-		}
-
-		const { progress } = await asyncEmit('request_video_time');
-		currentVideoTime.value = progress;
-	}
-}, 1000 * 3);
+	}, 1000 * 3);
+};
 
 const createDashPlayer = () => {
 	const videoPlayer = document.getElementById('videoPlayer');
